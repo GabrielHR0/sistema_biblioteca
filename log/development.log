@@ -1,0 +1,713 @@
+Started GET "/" for ::1 at 2025-09-16 16:25:00 -0300
+  [1m[35m (4.8ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.2ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+Processing by Rails::WelcomeController#index as HTML
+  Rendering /home/jales/.local/share/mise/installs/ruby/3.4.6/lib/ruby/gems/3.4.0/gems/railties-8.0.2.1/lib/rails/templates/rails/welcome/index.html.erb
+  Rendered /home/jales/.local/share/mise/installs/ruby/3.4.6/lib/ruby/gems/3.4.0/gems/railties-8.0.2.1/lib/rails/templates/rails/welcome/index.html.erb (Duration: 1.6ms | GC: 0.0ms)
+Completed 200 OK in 542ms (Views: 38.0ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 1.8ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 14:16:50 -0300
+  [1m[35m (6.2ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.8ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  
+ActiveRecord::PendingMigrationError (
+
+Migrations are pending. To resolve this issue, run:
+
+        bin/rails db:migrate
+
+You have 7 pending migrations:
+
+db/migrate/20250917174619_create_users.rb
+db/migrate/20250917174635_create_clients.rb
+db/migrate/20250917174643_create_roles.rb
+db/migrate/20250917174656_create_user_roles.rb
+db/migrate/20250918100106_add_password_changed_to_users.rb
+db/migrate/20250918101856_remove_last_login_at_from_users.rb
+db/migrate/20250918170255_add_cascade_to_user_roles.rb
+
+
+):
+  
+activerecord (8.0.2.1) lib/active_record/migration.rb:743:in 'ActiveRecord::Migration.check_pending_migrations'
+activerecord (8.0.2.1) lib/active_record/migration.rb:660:in 'block (2 levels) in ActiveRecord::Migration::CheckPending#call'
+activesupport (8.0.2.1) lib/active_support/file_update_checker.rb:85:in 'ActiveSupport::FileUpdateChecker#execute'
+activerecord (8.0.2.1) lib/active_record/migration.rb:665:in 'block in ActiveRecord::Migration::CheckPending#call'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'Thread::Mutex#synchronize'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'ActiveRecord::Migration::CheckPending#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'
+activesupport (8.0.2.1) lib/active_support/callbacks.rb:100:in 'ActiveSupport::Callbacks#run_callbacks'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'
+web-console (4.2.1) lib/web_console/middleware.rb:132:in 'WebConsole::Middleware#call_app'
+web-console (4.2.1) lib/web_console/middleware.rb:28:in 'block in WebConsole::Middleware#call'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'Kernel#catch'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'WebConsole::Middleware#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'
+railties (8.0.2.1) lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'
+railties (8.0.2.1) lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/remote_ip.rb:96:in 'ActionDispatch::RemoteIp#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'
+rack (3.2.1) lib/rack/method_override.rb:28:in 'Rack::MethodOverride#call'
+rack (3.2.1) lib/rack/runtime.rb:24:in 'Rack::Runtime#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:61:in 'block in ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:26:in 'ActionDispatch::ServerTiming::Subscriber#collect_events'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:60:in 'ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'
+rack (3.2.1) lib/rack/sendfile.rb:114:in 'Rack::Sendfile#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/host_authorization.rb:143:in 'ActionDispatch::HostAuthorization#call'
+rack-cors (3.0.0) lib/rack/cors.rb:102:in 'Rack::Cors#call'
+railties (8.0.2.1) lib/rails/engine.rb:535:in 'Rails::Engine#call'
+puma (7.0.3) lib/puma/configuration.rb:299:in 'Puma::Configuration::ConfigMiddleware#call'
+puma (7.0.3) lib/puma/request.rb:101:in 'block in Puma::Request#handle_request'
+puma (7.0.3) lib/puma/thread_pool.rb:346:in 'Puma::ThreadPool#with_force_shutdown'
+puma (7.0.3) lib/puma/request.rb:100:in 'Puma::Request#handle_request'
+puma (7.0.3) lib/puma/server.rb:497:in 'Puma::Server#process_client'
+puma (7.0.3) lib/puma/server.rb:266:in 'block in Puma::Server#run'
+puma (7.0.3) lib/puma/thread_pool.rb:173:in 'block in Puma::ThreadPool#spawn_thread'
+  [1m[35m (0.5ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.9ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (1.3ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2025-09-19 17:17:26.351364', '2025-09-19 17:17:26.351367') RETURNING "key" /*application='SistemaBiblioteca'*/[0m
+Migrating to CreateUsers (20250917174619)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.9ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "name" character varying NOT NULL, "email" character varying NOT NULL, "password_digest" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.9ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_email" ON "users" ("email") /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.6ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250917174619') RETURNING "version" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Migrating to CreateClients (20250917174635)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (5.8ms)[0m  [1m[35mCREATE TABLE "clients" ("id" bigserial primary key, "full_name" character varying NOT NULL, "cpf" character varying NOT NULL, "phone" character varying NOT NULL, "email" character varying NOT NULL, "password_digest" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_clients_on_email" ON "clients" ("email") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_clients_on_cpf" ON "clients" ("cpf") /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250917174635') RETURNING "version" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Migrating to CreateRoles (20250917174643)
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (10.5ms)[0m  [1m[35mCREATE TABLE "roles" ("id" bigserial primary key, "name" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_roles_on_name" ON "roles" ("name") /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250917174643') RETURNING "version" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Migrating to CreateUserRoles (20250917174656)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (5.0ms)[0m  [1m[35mCREATE TABLE "user_roles" ("id" bigserial primary key, "user_id" bigint NOT NULL, "role_id" bigint NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_318345354e"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+, CONSTRAINT "fk_rails_3369e0d5fc"
+FOREIGN KEY ("role_id")
+  REFERENCES "roles" ("id")
+) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.0ms)[0m  [1m[35mCREATE INDEX "index_user_roles_on_user_id" ON "user_roles" ("user_id") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.8ms)[0m  [1m[35mCREATE INDEX "index_user_roles_on_role_id" ON "user_roles" ("role_id") /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250917174656') RETURNING "version" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Migrating to AddPasswordChangedToUsers (20250918100106)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.2ms)[0m  [1m[35mALTER TABLE "users" ADD "password_changed" boolean /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250918100106') RETURNING "version" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Migrating to RemoveLastLoginAtFromUsers (20250918101856)
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.9ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "last_login_at" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[31mROLLBACK /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_advisory_unlock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+Started POST "/auth/login" for ::1 at 2025-09-19 14:17:55 -0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  
+ActiveRecord::PendingMigrationError (
+
+Migrations are pending. To resolve this issue, run:
+
+        bin/rails db:migrate
+
+You have 2 pending migrations:
+
+db/migrate/20250918101856_remove_last_login_at_from_users.rb
+db/migrate/20250918170255_add_cascade_to_user_roles.rb
+
+
+):
+  
+activerecord (8.0.2.1) lib/active_record/migration.rb:743:in 'ActiveRecord::Migration.check_pending_migrations'
+activerecord (8.0.2.1) lib/active_record/migration.rb:660:in 'block (2 levels) in ActiveRecord::Migration::CheckPending#call'
+activesupport (8.0.2.1) lib/active_support/file_update_checker.rb:85:in 'ActiveSupport::FileUpdateChecker#execute'
+activerecord (8.0.2.1) lib/active_record/migration.rb:665:in 'block in ActiveRecord::Migration::CheckPending#call'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'Thread::Mutex#synchronize'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'ActiveRecord::Migration::CheckPending#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'
+activesupport (8.0.2.1) lib/active_support/callbacks.rb:100:in 'ActiveSupport::Callbacks#run_callbacks'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'
+web-console (4.2.1) lib/web_console/middleware.rb:132:in 'WebConsole::Middleware#call_app'
+web-console (4.2.1) lib/web_console/middleware.rb:28:in 'block in WebConsole::Middleware#call'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'Kernel#catch'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'WebConsole::Middleware#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'
+railties (8.0.2.1) lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'
+railties (8.0.2.1) lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/remote_ip.rb:96:in 'ActionDispatch::RemoteIp#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'
+rack (3.2.1) lib/rack/method_override.rb:28:in 'Rack::MethodOverride#call'
+rack (3.2.1) lib/rack/runtime.rb:24:in 'Rack::Runtime#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:61:in 'block in ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:26:in 'ActionDispatch::ServerTiming::Subscriber#collect_events'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:60:in 'ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'
+rack (3.2.1) lib/rack/sendfile.rb:114:in 'Rack::Sendfile#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/host_authorization.rb:143:in 'ActionDispatch::HostAuthorization#call'
+rack-cors (3.0.0) lib/rack/cors.rb:102:in 'Rack::Cors#call'
+railties (8.0.2.1) lib/rails/engine.rb:535:in 'Rails::Engine#call'
+puma (7.0.3) lib/puma/configuration.rb:299:in 'Puma::Configuration::ConfigMiddleware#call'
+puma (7.0.3) lib/puma/request.rb:101:in 'block in Puma::Request#handle_request'
+puma (7.0.3) lib/puma/thread_pool.rb:346:in 'Puma::ThreadPool#with_force_shutdown'
+puma (7.0.3) lib/puma/request.rb:100:in 'Puma::Request#handle_request'
+puma (7.0.3) lib/puma/server.rb:497:in 'Puma::Server#process_client'
+puma (7.0.3) lib/puma/server.rb:266:in 'block in Puma::Server#run'
+puma (7.0.3) lib/puma/thread_pool.rb:173:in 'block in Puma::ThreadPool#spawn_thread'
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.7ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+Migrating to RemoveLastLoginAtFromUsers (20250918101856)
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (9.1ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "last_login_at" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[31mROLLBACK /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.7ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Create (16.9ms)[0m  [1m[32mINSERT INTO "roles" ("name", "created_at", "updated_at") VALUES ('Administrator', '2025-09-19 17:26:51.959711', '2025-09-19 17:26:51.959711') RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Exists? (2.8ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = 'admin@gmail.com' LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Create (0.6ms)[0m  [1m[32mINSERT INTO "users" ("name", "email", "password_digest", "created_at", "updated_at", "password_changed") VALUES ('admin', 'admin@gmail.com', '$2a$12$brNlAGqyVfk0pNyAKp9Fy.5p7ZR9ANLVXxpPgvaxHuFj4FiyA55N2', '2025-09-19 17:28:07.655489', '2025-09-19 17:28:07.655489', NULL) RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (3.5ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Load (3.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.7ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."id" = 1 LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUserRole Create (2.5ms)[0m  [1m[32mINSERT INTO "user_roles" ("user_id", "role_id", "created_at", "updated_at") VALUES (1, 1, '2025-09-19 17:30:03.935450', '2025-09-19 17:30:03.935450') RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Started POST "/auth/login" for ::1 at 2025-09-19 14:30:44 -0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  
+ActiveRecord::PendingMigrationError (
+
+Migrations are pending. To resolve this issue, run:
+
+        bin/rails db:migrate
+
+You have 2 pending migrations:
+
+db/migrate/20250918101856_remove_last_login_at_from_users.rb
+db/migrate/20250918170255_add_cascade_to_user_roles.rb
+
+
+):
+  
+activerecord (8.0.2.1) lib/active_record/migration.rb:743:in 'ActiveRecord::Migration.check_pending_migrations'
+activerecord (8.0.2.1) lib/active_record/migration.rb:660:in 'block (2 levels) in ActiveRecord::Migration::CheckPending#call'
+activesupport (8.0.2.1) lib/active_support/file_update_checker.rb:85:in 'ActiveSupport::FileUpdateChecker#execute'
+activerecord (8.0.2.1) lib/active_record/migration.rb:665:in 'block in ActiveRecord::Migration::CheckPending#call'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'Thread::Mutex#synchronize'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'ActiveRecord::Migration::CheckPending#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'
+activesupport (8.0.2.1) lib/active_support/callbacks.rb:100:in 'ActiveSupport::Callbacks#run_callbacks'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'
+web-console (4.2.1) lib/web_console/middleware.rb:132:in 'WebConsole::Middleware#call_app'
+web-console (4.2.1) lib/web_console/middleware.rb:28:in 'block in WebConsole::Middleware#call'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'Kernel#catch'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'WebConsole::Middleware#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'
+railties (8.0.2.1) lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'
+railties (8.0.2.1) lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/remote_ip.rb:96:in 'ActionDispatch::RemoteIp#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'
+rack (3.2.1) lib/rack/method_override.rb:28:in 'Rack::MethodOverride#call'
+rack (3.2.1) lib/rack/runtime.rb:24:in 'Rack::Runtime#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:61:in 'block in ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:26:in 'ActionDispatch::ServerTiming::Subscriber#collect_events'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:60:in 'ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'
+rack (3.2.1) lib/rack/sendfile.rb:114:in 'Rack::Sendfile#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/host_authorization.rb:143:in 'ActionDispatch::HostAuthorization#call'
+rack-cors (3.0.0) lib/rack/cors.rb:102:in 'Rack::Cors#call'
+railties (8.0.2.1) lib/rails/engine.rb:535:in 'Rails::Engine#call'
+puma (7.0.3) lib/puma/configuration.rb:299:in 'Puma::Configuration::ConfigMiddleware#call'
+puma (7.0.3) lib/puma/request.rb:101:in 'block in Puma::Request#handle_request'
+puma (7.0.3) lib/puma/thread_pool.rb:346:in 'Puma::ThreadPool#with_force_shutdown'
+puma (7.0.3) lib/puma/request.rb:100:in 'Puma::Request#handle_request'
+puma (7.0.3) lib/puma/server.rb:497:in 'Puma::Server#process_client'
+puma (7.0.3) lib/puma/server.rb:266:in 'block in Puma::Server#run'
+puma (7.0.3) lib/puma/thread_pool.rb:173:in 'block in Puma::ThreadPool#spawn_thread'
+Started POST "/auth/login" for ::1 at 2025-09-19 14:33:13 -0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  
+ActiveRecord::PendingMigrationError (
+
+Migrations are pending. To resolve this issue, run:
+
+        bin/rails db:migrate
+
+You have 2 pending migrations:
+
+db/migrate/20250918101856_remove_last_login_at_from_users.rb
+db/migrate/20250918170255_add_cascade_to_user_roles.rb
+
+
+):
+  
+activerecord (8.0.2.1) lib/active_record/migration.rb:743:in 'ActiveRecord::Migration.check_pending_migrations'
+activerecord (8.0.2.1) lib/active_record/migration.rb:660:in 'block (2 levels) in ActiveRecord::Migration::CheckPending#call'
+activesupport (8.0.2.1) lib/active_support/file_update_checker.rb:85:in 'ActiveSupport::FileUpdateChecker#execute'
+activerecord (8.0.2.1) lib/active_record/migration.rb:665:in 'block in ActiveRecord::Migration::CheckPending#call'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'Thread::Mutex#synchronize'
+activerecord (8.0.2.1) lib/active_record/migration.rb:657:in 'ActiveRecord::Migration::CheckPending#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'
+activesupport (8.0.2.1) lib/active_support/callbacks.rb:100:in 'ActiveSupport::Callbacks#run_callbacks'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'
+web-console (4.2.1) lib/web_console/middleware.rb:132:in 'WebConsole::Middleware#call_app'
+web-console (4.2.1) lib/web_console/middleware.rb:28:in 'block in WebConsole::Middleware#call'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'Kernel#catch'
+web-console (4.2.1) lib/web_console/middleware.rb:17:in 'WebConsole::Middleware#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'
+railties (8.0.2.1) lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'
+railties (8.0.2.1) lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/remote_ip.rb:96:in 'ActionDispatch::RemoteIp#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'
+rack (3.2.1) lib/rack/method_override.rb:28:in 'Rack::MethodOverride#call'
+rack (3.2.1) lib/rack/runtime.rb:24:in 'Rack::Runtime#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:61:in 'block in ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:26:in 'ActionDispatch::ServerTiming::Subscriber#collect_events'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/server_timing.rb:60:in 'ActionDispatch::ServerTiming#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/executor.rb:16:in 'ActionDispatch::Executor#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'
+rack (3.2.1) lib/rack/sendfile.rb:114:in 'Rack::Sendfile#call'
+actionpack (8.0.2.1) lib/action_dispatch/middleware/host_authorization.rb:143:in 'ActionDispatch::HostAuthorization#call'
+rack-cors (3.0.0) lib/rack/cors.rb:102:in 'Rack::Cors#call'
+railties (8.0.2.1) lib/rails/engine.rb:535:in 'Rails::Engine#call'
+puma (7.0.3) lib/puma/configuration.rb:299:in 'Puma::Configuration::ConfigMiddleware#call'
+puma (7.0.3) lib/puma/request.rb:101:in 'block in Puma::Request#handle_request'
+puma (7.0.3) lib/puma/thread_pool.rb:346:in 'Puma::ThreadPool#with_force_shutdown'
+puma (7.0.3) lib/puma/request.rb:100:in 'Puma::Request#handle_request'
+puma (7.0.3) lib/puma/server.rb:497:in 'Puma::Server#process_client'
+puma (7.0.3) lib/puma/server.rb:266:in 'block in Puma::Server#run'
+puma (7.0.3) lib/puma/thread_pool.rb:173:in 'block in Puma::ThreadPool#spawn_thread'
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (1.2ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+Migrating to RemoveLastLoginAtFromUsers (20250918101856)
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (10.6ms)[0m  [1m[35mALTER TABLE "users" DROP COLUMN "last_login_at" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[31mROLLBACK /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_advisory_unlock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.8ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.4ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.6ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.5ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (71.4ms)[0m  [1m[35mDROP DATABASE IF EXISTS "sistema_biblioteca_development" /*application='SistemaBiblioteca'*/[0m
+  [1m[35mSQL (1.9ms)[0m  [1m[35mSET search_path TO public /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (33.3ms)[0m  [1m[35mDROP DATABASE IF EXISTS "sistema_biblioteca_test" /*application='SistemaBiblioteca'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (188.2ms)[0m  [1m[35mCREATE DATABASE "sistema_biblioteca_development" ENCODING = 'unicode' /*application='SistemaBiblioteca'*/[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[35mSET search_path TO public /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (94.9ms)[0m  [1m[35mCREATE DATABASE "sistema_biblioteca_test" ENCODING = 'unicode' /*application='SistemaBiblioteca'*/[0m
+  [1m[35mSQL (0.9ms)[0m  [1m[35mCREATE EXTENSION IF NOT EXISTS "plpgsql" SCHEMA pg_catalog /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mDROP TABLE IF EXISTS "clients" CASCADE /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (8.8ms)[0m  [1m[35mCREATE TABLE "clients" ("id" bigserial primary key, "full_name" character varying NOT NULL, "cpf" character varying NOT NULL, "phone" character varying NOT NULL, "email" character varying NOT NULL, "password_digest" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.5ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_clients_on_cpf" ON "clients" ("cpf") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_clients_on_email" ON "clients" ("email") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mDROP TABLE IF EXISTS "roles" CASCADE /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.4ms)[0m  [1m[35mCREATE TABLE "roles" ("id" bigserial primary key, "name" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_roles_on_name" ON "roles" ("name") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mDROP TABLE IF EXISTS "user_roles" CASCADE /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (3.0ms)[0m  [1m[35mCREATE TABLE "user_roles" ("id" bigserial primary key, "user_id" bigint NOT NULL, "role_id" bigint NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE INDEX "index_user_roles_on_role_id" ON "user_roles" ("role_id") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.0ms)[0m  [1m[35mCREATE INDEX "index_user_roles_on_user_id" ON "user_roles" ("user_id") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mDROP TABLE IF EXISTS "users" CASCADE /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.5ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "name" character varying NOT NULL, "email" character varying NOT NULL, "password_digest" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, "password_changed" boolean) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_email" ON "users" ("email") /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (2.2ms)[0m  [1m[35mALTER TABLE "user_roles" ADD CONSTRAINT "fk_rails_3369e0d5fc"
+FOREIGN KEY ("role_id")
+  REFERENCES "roles" ("id")
+ /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.6ms)[0m  [1m[35mALTER TABLE "user_roles" ADD CONSTRAINT "fk_rails_318345354e"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.4ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" (version) VALUES (20250918170255) /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (1.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" (version) VALUES
+(20250918101856),
+(20250918100106),
+(20250917174656),
+(20250917174643),
+(20250917174635),
+(20250917174619); /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (4.1ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.7ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (1.2ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2025-09-19 17:34:16.633343', '2025-09-19 17:34:16.633347') RETURNING "key" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.3ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'schema_sha1' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.9ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('schema_sha1', '124bb618f7c2e9480d985c92ecb6983831295f8c', '2025-09-19 17:34:16.646300', '2025-09-19 17:34:16.646303') RETURNING "key" /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_try_advisory_lock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (1.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.8ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[34mSELECT pg_advisory_unlock(7540832014798980345) /*application='SistemaBiblioteca'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Create (12.2ms)[0m  [1m[32mINSERT INTO "roles" ("name", "created_at", "updated_at") VALUES ('Administrator', '2025-09-19 17:36:38.329791', '2025-09-19 17:36:38.329791') RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Exists? (11.1ms)[0m  [1m[34mSELECT 1 AS one FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Create (1.6ms)[0m  [1m[32mINSERT INTO "users" ("name", "email", "password_digest", "created_at", "updated_at", "password_changed") VALUES ('admin', 'admin@example.com', '$2a$12$KXig/iefNBK1RXk9/wTinefMJej7ITdXBe1pWQ4QaOp0yIZo16joS', '2025-09-19 17:37:28.676070', '2025-09-19 17:37:28.676070', NULL) RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.4ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."id" = NULL LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.7ms)[0m  [1m[34mSELECT "roles".* FROM "roles" /* loading for pp */ LIMIT 11 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.7ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."name" = 'Administrator' /* loading for pp */ LIMIT 11 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.6ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."name" = 'Administrator' /* loading for pp */ LIMIT 11 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (0.8ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."name" = 'Administrator' /* loading for inspect */ LIMIT 11 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUserRole Load (1.3ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" /* loading for pp */ LIMIT 11 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mBEGIN /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mRole Load (1.0ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."id" = 1 LIMIT 1 /*application='SistemaBiblioteca'*/[0m
+  [1m[36mUserRole Create (1.5ms)[0m  [1m[32mINSERT INTO "user_roles" ("user_id", "role_id", "created_at", "updated_at") VALUES (1, 1, '2025-09-19 17:42:15.292951', '2025-09-19 17:42:15.292951') RETURNING "id" /*application='SistemaBiblioteca'*/[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[35mCOMMIT /*application='SistemaBiblioteca'*/[0m
+Started POST "/auth/login" for ::1 at 2025-09-19 14:43:44 -0300
+  [1m[36mActiveRecord::SchemaMigration Load (1.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='SistemaBiblioteca'*/[0m
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@gmail.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+Completed 401 Unauthorized in 129ms (Views: 0.4ms | ActiveRecord: 9.0ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 14:43:54 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (1.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (1.3ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 477ms (Views: 1.7ms | ActiveRecord: 12.7ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 14:55:28 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (1.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (1.1ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 221ms (Views: 1.8ms | ActiveRecord: 9.0ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 15:11:57 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (1.0ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (1.1ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 204ms (Views: 4.3ms | ActiveRecord: 6.8ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 15:24:23 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (1.1ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 222ms (Views: 8.5ms | ActiveRecord: 8.6ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 15:24:47 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (0.6ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 183ms (Views: 9.0ms | ActiveRecord: 1.4ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 15:25:24 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (0.7ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (0.7ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 168ms (Views: 1.6ms | ActiveRecord: 1.4ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/auth/login" for ::1 at 2025-09-19 15:28:20 -0300
+Processing by AuthController#login as */*
+  Parameters: {"email" => "[FILTERED]", "password" => "[FILTERED]", "auth" => {"email" => "[FILTERED]", "password" => "[FILTERED]"}}
+  [1m[36mUser Load (1.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."email" = 'admin@example.com' LIMIT 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/controllers/auth_controller.rb:5:in 'AuthController#login'
+  [1m[36mRole Load (0.8ms)[0m  [1m[34mSELECT "roles".* FROM "roles" INNER JOIN "user_roles" ON "roles"."id" = "user_roles"."role_id" WHERE "user_roles"."user_id" = 1 /*action='login',application='SistemaBiblioteca',controller='auth'*/[0m
+  ↳ app/models/User.rb:27:in 'Enumerable#map'
+Completed 200 OK in 172ms (Views: 1.0ms | ActiveRecord: 2.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:02:34 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (1.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 192ms (Views: 10.3ms | ActiveRecord: 9.2ms (2 queries, 0 cached) | GC: 3.7ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:02:35 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 8ms (Views: 2.6ms | ActiveRecord: 0.9ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:02:39 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 7ms (Views: 3.3ms | ActiveRecord: 1.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:02:39 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 11ms (Views: 5.0ms | ActiveRecord: 0.9ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:03:18 -0300
+Started GET "/users" for ::1 at 2025-09-19 16:03:18 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (1.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 21ms (Views: 3.4ms | ActiveRecord: 1.9ms (2 queries, 0 cached) | GC: 2.4ms)
+
+
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 10ms (Views: 2.1ms | ActiveRecord: 1.1ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:03:18 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 12ms (Views: 6.8ms | ActiveRecord: 0.9ms (2 queries, 0 cached) | GC: 0.8ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:03:25 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 13ms (Views: 3.5ms | ActiveRecord: 1.3ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:03:26 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 8ms (Views: 2.0ms | ActiveRecord: 0.8ms (2 queries, 0 cached) | GC: 3.1ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:04:01 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.9ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 9ms (Views: 3.1ms | ActiveRecord: 1.7ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:04:01 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.7ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 9ms (Views: 2.6ms | ActiveRecord: 1.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:04:02 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.7ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 7ms (Views: 1.9ms | ActiveRecord: 1.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:08:32 -0300
+Started GET "/users" for ::1 at 2025-09-19 16:08:32 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (1.0ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 7ms (Views: 2.2ms | ActiveRecord: 1.4ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.9ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.7ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 8ms (Views: 2.7ms | ActiveRecord: 1.5ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:08:32 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 10ms (Views: 2.5ms | ActiveRecord: 1.0ms (2 queries, 0 cached) | GC: 2.5ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:44 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 10ms (Views: 3.3ms | ActiveRecord: 1.5ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:44 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.6ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 18ms (Views: 13.9ms | ActiveRecord: 1.0ms (2 queries, 0 cached) | GC: 11.5ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:48 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.9ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 5ms (Views: 1.6ms | ActiveRecord: 1.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:48 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 4ms (Views: 1.6ms | ActiveRecord: 0.8ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:50 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 6ms (Views: 3.0ms | ActiveRecord: 0.8ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:09:50 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.3ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 5ms (Views: 2.0ms | ActiveRecord: 0.8ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:13:59 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.8ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+  [1m[36mUserRole Load (1.0ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" WHERE "user_roles"."user_id" = 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+  [1m[36mRole Load (0.9ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."id" = 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 289ms (Views: 13.9ms | ActiveRecord: 20.9ms (4 queries, 0 cached) | GC: 3.9ms)
+
+
+Started GET "/users" for ::1 at 2025-09-19 16:13:59 -0300
+Processing by UsersController#index as */*
+  Parameters: {"user" => {}}
+  [1m[36mUser Load (0.5ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = 1 LIMIT 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:91:in 'UsersController#authorize_request'
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+  [1m[36mUserRole Load (0.9ms)[0m  [1m[34mSELECT "user_roles".* FROM "user_roles" WHERE "user_roles"."user_id" = 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+  [1m[36mRole Load (0.5ms)[0m  [1m[34mSELECT "roles".* FROM "roles" WHERE "roles"."id" = 1 /*action='index',application='SistemaBiblioteca',controller='users'*/[0m
+  ↳ app/controllers/users_controller.rb:9:in 'UsersController#index'
+Completed 200 OK in 24ms (Views: 0.7ms | ActiveRecord: 2.3ms (4 queries, 0 cached) | GC: 0.0ms)
+
+

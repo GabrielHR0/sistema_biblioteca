@@ -1,7 +1,7 @@
-/* CSS Global Atualizado */
+
 
 html, body, #root {
-  height: 100%;          /* Garante que o React ocupe toda a tela */
+  height: 100%;    
   margin: 0;
   padding: 0;
 }

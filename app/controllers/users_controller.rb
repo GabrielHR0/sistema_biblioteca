@@ -5,8 +5,8 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    @users = User.all
-    render json: @users
+    @users = User.includes(:roles).all
+    render json: @users.as_json(include: { roles: {only: [:id, :name] } } )
   end
 
   # GET /users/:id
