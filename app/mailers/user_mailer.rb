@@ -6,7 +6,7 @@ class UserMailer < ApplicationMailer
     frontUrl = ENV["FRONT_URL"]
     @user = user
     @token = token
-    @url  = "#{frontUrl}/password-reset/?token=#{@token}"
+    @url  = "#{frontUrl}/password-reset/#{@token}"
     mail(to: @user.email, subject: "Alteração de senha")
   end
 end

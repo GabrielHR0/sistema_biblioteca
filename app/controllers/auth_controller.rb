@@ -6,7 +6,15 @@ class AuthController < ApplicationController
 
     if user&.authenticate(params[:password])
       token = JsonWebToken.encode(user_id: user.id)
-      response = { token: token, user: user}
+      response = { 
+        token: token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name, 
+          roles: user.roles.pluck(:name)
+        }
+      }
 
       if user.must_change_password?
         response[:must_change_password] = true

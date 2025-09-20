@@ -11,18 +11,28 @@ class UsersController < ApplicationController
 
   # GET /users/:id
   def show
-    render json: @user
+    @user = User.includes(:roles).all
+    render json: @user.as_json(include: { roles: {only: [:id, :name] } } )
   end
 
   # POST /users
   def create
-    @user = User.new(user_params)
+    @user = User.new(user_params)  # inicializa a instância
+
+    if user_params[:password].blank? || user_params[:password_confirmation].blank?
+      puts "#{@user.inspect}"
+      return render json: { error: "Senha e confirmação são obrigatórias" }, status: :unprocessable_entity
+    end
+
+    if user_params[:password] != user_params[:password_confirmation]
+      return render json: { error: "Senha e confirmação não coincidem" }, status: :unprocessable_entity
+    end
 
     if @user.save
       assign_roles(@user)
       render json: @user, status: :created
     else
-      render json: @user.errors, status: :unprocessable_entity
+      render json: { error: @user.errors.full_messages.join(", ") }, status: :unprocessable_entity
     end
   end
 
@@ -49,6 +59,22 @@ class UsersController < ApplicationController
     end
   end
 
+  # POST /users/verify_password
+  def verify_password
+    password = params[:password]
+
+    if password.blank?
+      return render json: { error: "Senha não fornecida" }, status: :unprocessable_entity
+    end
+
+    if @current_user.authenticate(password)
+      render json: { valid: true }, status: :ok
+    else
+      render json: { valid: false, error: "Senha incorreta" }, status: :unauthorized
+    end
+  end
+
+
   # DELETE /users/:id
   def destroy
     @user.destroy
@@ -67,21 +93,19 @@ class UsersController < ApplicationController
     params.permit(:name, :email, :password, :password_confirmation)
   end
 
-  # verifica se é admin
+
   def require_admin
     unless @current_user&.has_access?(:Administrator)
       render json: { error: "Acesso negado: precisa ser administrador" }, status: :forbidden
     end
   end
 
-  # verifica se é funcionário (admin ou librarian)
   def require_staff
     unless @current_user&.has_access?(:Administrator) || @current_user&.has_access?(:Librarian)
       render json: { error: "Acesso negado: precisa ser funcionário" }, status: :forbidden
     end
   end
 
-  # lê JWT e identifica usuário logado
   def authorize_request
     header = request.headers['Authorization']
     token = header.split(' ').last if header
