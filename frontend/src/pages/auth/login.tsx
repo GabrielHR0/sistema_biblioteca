@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { useAuth } from "./authContext";
 import { Link, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -10,7 +10,7 @@ export const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -18,13 +18,14 @@ export const Login: React.FC = () => {
 
     try {
       const response = await login(email, password);
-      console.log(response);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("token", response.token);
+
+      window.dispatchEvent(new Event("storage"));
 
       if (response?.must_change_password) {
-        // Redireciona para a tela de reset de senha na primeira vez
-        navigate(`/password-reset/?token=${response.token}`, { state: { firstLogin: true } });
+        navigate(`/password-reset/${response.token}`, { state: { firstLogin: true } });
       } else {
-        // Redireciona para o Dashboard
         navigate("/dashboard");
       }
     } catch (err: any) {

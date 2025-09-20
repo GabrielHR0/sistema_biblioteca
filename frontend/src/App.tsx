@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 
-import { Login } from "./auth/login";
-import { ForgotPassword } from "./auth/forgotPassword";
-import { ResetPassword } from "./auth/resetPassword";
-import { AdminDashboard } from "./dashboard/AdminDashboard";
-import { AdminUsers } from "./dashboard/AdminUsers"; // página de gerenciamento de usuários
-//import { Logout } from "./auth/logout"; // página ou componente de logout
+import { Login } from "@pages/auth/login";
+import { ForgotPassword } from "@pages/auth/forgotPassword";
+import { ResetPassword } from "@pages/auth/resetPassword";
+import { AdminDashboard } from "@pages/dashboard/AdminDashboard";
+import { AdminUsers } from "@pages/users/AdminUsers";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -17,35 +17,56 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-export const App = () => (
-  <BrowserRouter>
-    <Routes>
+export const App = () => {
+  const [user, setUser] = useState(() => {
+    const userString = localStorage.getItem("user");
+    return userString ? JSON.parse(userString) : null;
+  });
 
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/password-reset" element={<ResetPassword />} />
+  const [isAdmin, setIsAdmin] = useState(() => user?.roles?.includes("Administrator") || false);
 
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/usuarios"
-        element={
-          <ProtectedRoute>
-            <AdminUsers />
-          </ProtectedRoute>
-        }
-      />
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const userString = localStorage.getItem("user");
+      const newUser = userString ? JSON.parse(userString) : null;
+      setUser(newUser);
+      setIsAdmin(newUser?.roles?.includes("Administrator") || false);
+    };
 
-      
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<h1>404 - Página não encontrada</h1>} />
-    </Routes>
-  </BrowserRouter>
-);
+  const userName = user?.name || "";
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/password-reset/:token" element={<ResetPassword />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/usuarios"
+          element={
+            <ProtectedRoute>
+              <AdminUsers userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<h1>404 - Página não encontrada</h1>} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
