@@ -10,12 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_18_170255) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
+  create_table "book_categories", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "category_id"], name: "index_book_categories_on_book_id_and_category_id", unique: true
+    t.index ["book_id"], name: "index_book_categories_on_book_id"
+    t.index ["category_id"], name: "index_book_categories_on_category_id"
+  end
+
+  create_table "books", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "author", null: false
+    t.integer "total_copies", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "categories", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_categories_on_name", unique: true
+  end
+
   create_table "clients", force: :cascade do |t|
-    t.string "full_name", null: false
+    t.string "fullName", null: false
     t.string "cpf", null: false
     t.string "phone", null: false
     t.string "email", null: false
@@ -24,6 +49,31 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_18_170255) do
     t.datetime "updated_at", null: false
     t.index ["cpf"], name: "index_clients_on_cpf", unique: true
     t.index ["email"], name: "index_clients_on_email", unique: true
+  end
+
+  create_table "copies", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.integer "number", null: false
+    t.string "edition", null: false
+    t.string "status", default: "available", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id", "number"], name: "index_copies_on_book_id_and_number", unique: true
+    t.index ["book_id"], name: "index_copies_on_book_id"
+  end
+
+  create_table "loans", force: :cascade do |t|
+    t.bigint "copy_id", null: false
+    t.bigint "client_id", null: false
+    t.bigint "user_id"
+    t.date "loan_date", null: false
+    t.date "due_date", null: false
+    t.string "status", default: "ongoing", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_loans_on_client_id"
+    t.index ["copy_id"], name: "index_loans_on_copy_id"
+    t.index ["user_id"], name: "index_loans_on_user_id"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -52,6 +102,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_18_170255) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "book_categories", "books"
+  add_foreign_key "book_categories", "categories"
+  add_foreign_key "copies", "books"
+  add_foreign_key "loans", "clients"
+  add_foreign_key "loans", "copies"
+  add_foreign_key "loans", "users"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users", on_delete: :cascade
 end

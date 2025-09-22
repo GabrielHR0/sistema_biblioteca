@@ -7,6 +7,8 @@ import { ForgotPassword } from "@pages/auth/forgotPassword";
 import { ResetPassword } from "@pages/auth/resetPassword";
 import { AdminDashboard } from "@pages/dashboard/AdminDashboard";
 import { AdminUsers } from "@pages/users/AdminUsers";
+import { Books } from "@pages/books/Books";
+import { Categories } from "@pages/books/Categories";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -45,6 +47,8 @@ export const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/password-reset/:token" element={<ResetPassword />} />
+        <Route path="/categories" element={<Categories userName={userName} isAdmin={isAdmin}/>} />
+
 
         <Route
           path="/dashboard"
@@ -60,6 +64,15 @@ export const App = () => {
           element={
             <ProtectedRoute>
               <AdminUsers userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="livros"
+          element={
+            <ProtectedRoute>
+              <Books userName={userName} isAdmin={isAdmin}></Books>
             </ProtectedRoute>
           }
         />

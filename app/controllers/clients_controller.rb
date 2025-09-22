@@ -1,54 +1,71 @@
 class ClientsController < ApplicationController
-  before_action :set_client, only: %i[show edit update destroy]
+  before_action :authorize_request
+  before_action :require_staff, only: %i[new create edit update destroy]
+  before_action :set_client, only: %i[show update destroy]
 
   # GET /clients
   def index
     @clients = Client.all
+    render json: @clients
   end
 
   # GET /clients/:id
-  def show; end
-
-  # GET /clients/new
-  def new
-    @client = Client.new
+  def show
+    render json: @client
   end
 
   # POST /clients
   def create
     @client = Client.new(client_params)
     if @client.save
-      redirect_to @client, notice: "Cliente criado com sucesso."
+      render json: { message: "Cliente criado com sucesso.", client: @client }, status: :created
     else
-      render :new, status: :unprocessable_entity
+      render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
     end
   end
-
-  # GET /clients/:id/edit
-  def edit; end
 
   # PATCH/PUT /clients/:id
   def update
     if @client.update(client_params)
-      redirect_to @client, notice: "Cliente atualizado com sucesso."
+      render json: { message: "Cliente atualizado com sucesso.", client: @client }
     else
-      render :edit, status: :unprocessable_entity
+      render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   # DELETE /clients/:id
   def destroy
     @client.destroy
-    redirect_to clients_url, notice: "Cliente removido com sucesso."
+    render json: { message: "Cliente removido com sucesso." }
   end
 
   private
 
   def set_client
     @client = Client.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Cliente não encontrado." }, status: :not_found
   end
 
   def client_params
-    params.require(:client).permit(:full_name, :cpf, :phone, :email, :password, :password_confirmation)
+    params.permit(:fullName, :cpf, :phone, :email)
+  end
+
+  def require_staff
+    unless @current_user&.has_access?(:Administrator) || @current_user&.has_access?(:Librarian)
+      render json: { error: "Acesso negado: precisa ser funcionário" }, status: :forbidden
+    end
+  end
+
+  def authorize_request
+    header = request.headers['Authorization']
+    token = header.split(' ').last if header
+
+    begin
+      decoded = JsonWebToken.decode(token)
+      @current_user = User.find(decoded[:user_id]) if decoded
+    rescue ActiveRecord::RecordNotFound, JWT::DecodeError
+      render json: { errors: 'Token inválido ou expirado' }, status: :unauthorized
+    end
   end
 end

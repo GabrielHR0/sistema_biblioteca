@@ -17,10 +17,9 @@ class UsersController < ApplicationController
 
   # POST /users
   def create
-    @user = User.new(user_params)  # inicializa a instância
+    @user = User.new(user_params) 
 
     if user_params[:password].blank? || user_params[:password_confirmation].blank?
-      puts "#{@user.inspect}"
       return render json: { error: "Senha e confirmação são obrigatórias" }, status: :unprocessable_entity
     end
 
@@ -92,7 +91,6 @@ class UsersController < ApplicationController
   def user_params
     params.permit(:name, :email, :password, :password_confirmation)
   end
-
 
   def require_admin
     unless @current_user&.has_access?(:Administrator)
