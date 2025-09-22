@@ -10,6 +10,7 @@ export interface BookCopy {
   number?: number | any;
   edition: string;
   status: "available" | "borrowed" | "lost";
+  loan_due_date?: string | any;
 }
 
 export interface Book {
@@ -19,6 +20,8 @@ export interface Book {
   description?: string;
   categories?: Category[];
   copies?: BookCopy[];
+  total_copies?: number | any;
+  available_copies?: number;
 }
 
 interface BookFormModalProps {

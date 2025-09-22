@@ -4,18 +4,33 @@ class BooksController < ApplicationController
   before_action :set_book, only: %i[show update destroy]
 
   def index
-    @books = Book.includes(:categories).all
-    render json: @books.map { |book| 
+    if params[:search].present?
+      search_term = "%#{params[:search]}%"
+      @books = Book.includes(:categories, :copies)
+                   .where("title ILIKE ? OR author ILIKE ?", search_term, search_term)
+    else
+      @books = Book.includes(:categories, :copies).all
+    end
+
+    render json: @books.map do |book|
       book.as_json(
         methods: [:total_copies],
-        include: { categories: { only: [:id, :name] } }
+        include: {
+          categories: { only: [:id, :name] },
+          copies: { only: [:id, :edition, :status, :number] } # inclui cópias no resultado
+        }
       )
-    }
+    end
   end
 
   def show
-    render json: @book 
-    render json: @book.as_json(methods: [:total_copies], include: { categories: {only: [:id, :name] } } )
+    render json: @book.as_json(
+      methods: [:total_copies],
+      include: {
+        categories: { only: [:id, :name] },
+        copies: { only: [:id, :edition, :status, :number] }
+      }
+    )
   end
 
   def new
@@ -33,7 +48,6 @@ class BooksController < ApplicationController
   end
 
   def update
-
     book_attrs = book_params.to_h.compact
     category_ids = params[:category_ids] || (params[:book] && params[:book][:category_ids])
 
@@ -44,15 +58,15 @@ class BooksController < ApplicationController
 
     if @book.update(book_params)
       assign_categories(@book) if category_ids.present?
-      render json: { message: "Livro atualizado com sucesso.", book: @book}
+      render json: { message: "Livro atualizado com sucesso.", book: @book }
     else
       render json: { errors: @book.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    @client.destroy
-    render json: { message: "Cliente removido com sucesso." }
+    @book.destroy
+    render json: { message: "Livro removido com sucesso." }
   end
 
   private
@@ -77,7 +91,7 @@ class BooksController < ApplicationController
     header = request.headers['Authorization']
     token = header.split(' ').last if header
 
-    begin 
+    begin
       decoded = JsonWebToken.decode(token)
       @current_user = User.find(decoded[:user_id]) if decoded
     rescue ActiveRecord::RecordNotFound, JWT::DecodeError
@@ -85,7 +99,7 @@ class BooksController < ApplicationController
     end
   end
 
- def assign_categories(user)
+  def assign_categories(book)
     return unless params[:categories_ids].present? || (params[:book] && params[:book][:categories_ids].present?)
 
     new_categories_ids = params[:categories_ids] || params[:book][:categories_ids]
@@ -94,12 +108,10 @@ class BooksController < ApplicationController
 
     to_add = new_categories_ids - current_categories_ids
     to_add.each do |category_id|
-    BookCategory.create(book_id: book.id, category_id: category_id)
+      BookCategory.create(book_id: book.id, category_id: category_id)
     end
 
-    to_remove = current_categories_ids - current_categories_ids
-    BookCategory.where(book_id: book_id, category_id: to_remove).destroy_all
-    to_remove.each do |category_id|
-    end
+    to_remove = current_categories_ids - new_categories_ids
+    BookCategory.where(book_id: book.id, category_id: to_remove).destroy_all
   end
 end

@@ -4,8 +4,14 @@ class ClientsController < ApplicationController
   before_action :set_client, only: %i[show update destroy]
 
   # GET /clients
+  # Se houver o parâmetro ?search=..., faz a busca por full_name ou cpf
   def index
-    @clients = Client.all
+    if params[:search].present?
+      query = params[:search].strip
+      @clients = Client.where("full_name ILIKE :q OR cpf ILIKE :q", q: "%#{query}%")
+    else
+      @clients = Client.all
+    end
     render json: @clients
   end
 

@@ -35,7 +35,7 @@ export interface Book {
   description?: string;
   categories?: Category[];
   copies?: BookCopy[];
-  total_copies?: number;
+  total_copies?: number | any;
   available_copies?: number;
 }
 

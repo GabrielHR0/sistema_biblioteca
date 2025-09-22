@@ -1,15 +1,23 @@
 class Copy < ApplicationRecord
-  has_many :loans
   belongs_to :book
+  has_many :loans
 
-  enum status: { available: "available", borrowed: "borrowed", lost: "lost" }
+  # Lista de status válidos
+  VALID_STATUSES = %w[available borrowed lost].freeze
 
   validates :edition, :status, presence: true
   validates :number, uniqueness: { scope: :book_id }
+  validates :status, inclusion: { in: VALID_STATUSES, message: "%{value} is not a valid status" }
 
   before_create :assign_sequential_number
-  after_save :update_total_copies
-  after_destroy :update_total_copies
+  after_commit :update_book_total
+  after_destroy :update_book_total
+
+  VALID_STATUSES.each do |s|
+    define_method("#{s}?") do
+      status == s
+    end
+  end
 
   private
 
@@ -18,6 +26,6 @@ class Copy < ApplicationRecord
   end
 
   def update_book_total
-    book.update_total_copies
+    book&.update_total_copies
   end
 end
