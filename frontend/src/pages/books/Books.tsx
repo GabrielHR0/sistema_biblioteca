@@ -3,11 +3,15 @@ import { BaseLayout } from "@layouts/BaseLayout";
 import {
   apiGetBooks,
   apiCreateBook,
+  apiUpdateBook,
   apiDeleteBook,
-  apiCreateMultipleCopies,
-  apiGetCategories
+  apiGetCategories,
+  apiCreateCategory,
+  apiGetCopiesByBook,
+  apiUpdateCopy
 } from "./BooksService";
 import { BookFormModal } from "@components/BookFormModal";
+import { CopiesModal } from "@components/CopiesModal";
 import { useAuth } from "../auth/authContext";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -22,10 +26,25 @@ export interface Category {
   name: string;
 }
 
+export interface Loan {
+  id?: number;
+  copy_id: number;
+  user_id: number;
+  loan_date: string;
+  due_date: string;
+  return_date?: string;
+  status: string;
+}
+
 export interface BookCopy {
   id?: number;
   edition: string;
   status: "available" | "borrowed" | "lost";
+  number?: number;
+  acquisition_date?: string;
+  condition?: string;
+  book_id?: number;
+  loans?: Loan[];
 }
 
 export interface Book {
@@ -44,31 +63,52 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showBookModal, setShowBookModal] = useState(false);
+  const [showCopiesModal, setShowCopiesModal] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [search, setSearch] = useState("");
+  const [selectedBookCopies, setSelectedBookCopies] = useState<Book | null>(null);
+  
+  // Estados para filtros
+  const [titleSearch, setTitleSearch] = useState("");
+  const [authorSearch, setAuthorSearch] = useState("");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const booksPerPage = 10;
   const navigate = useNavigate();
 
   // -------------------- FETCH BOOKS --------------------
-  useEffect(() => {
+  const fetchBooks = async () => {
     if (!token) return;
-    const fetchBooks = async () => {
-      try {
-        const data = await apiGetBooks(token);
-        console.log(data);
-        const booksWithCalculations = data.map((book: Book) => ({
+    setLoading(true);
+    try {
+      const data = await apiGetBooks(token);
+      console.log("Dados recebidos da API:", data);
+      
+      const booksWithCalculations = data.map((book: Book) => {
+        const total = book.copies?.length || book.total_copies || 0;
+        const available = book.copies?.filter(copy => copy.status === 'available').length || book.available_copies || 0;
+        
+        return {
           ...book,
-          total_copies: book.copies?.length || 0,
-          available_copies: book.copies?.filter(copy => copy.status === 'available').length || 0
-        }));
-        setBooks(booksWithCalculations);
-        setFilteredBooks(booksWithCalculations);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+          total_copies: total,
+          available_copies: available
+        };
+      });
+      
+      setBooks(booksWithCalculations);
+      setFilteredBooks(booksWithCalculations);
+    } catch (err) {
+      console.error("Erro ao buscar livros:", err);
+      alert("Erro ao carregar livros");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchBooks();
   }, [token]);
 
@@ -80,7 +120,7 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
         const categoriesData = await apiGetCategories(token);
         setCategories(categoriesData);
       } catch (err) {
-        console.error(err);
+        console.error("Erro ao buscar categorias:", err);
       }
     };
     fetchCategories();
@@ -89,25 +129,63 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
   // -------------------- FILTRO --------------------
   useEffect(() => {
     let filtered = books;
-    if (search) {
-      filtered = filtered.filter(
-        (b) =>
-          b.title.toLowerCase().includes(search.toLowerCase()) ||
-          b.author.toLowerCase().includes(search.toLowerCase()) ||
-          b.categories?.some(cat => 
-            cat.name.toLowerCase().includes(search.toLowerCase())
-          )
+    
+    // Filtro por título
+    if (titleSearch) {
+      filtered = filtered.filter(b =>
+        b.title.toLowerCase().includes(titleSearch.toLowerCase())
       );
     }
+    
+    // Filtro por autor
+    if (authorSearch) {
+      filtered = filtered.filter(b =>
+        b.author.toLowerCase().includes(authorSearch.toLowerCase())
+      );
+    }
+    
+    // Filtro por categorias
+    if (selectedCategoryIds.length > 0) {
+      filtered = filtered.filter(b =>
+        b.categories?.some(cat => selectedCategoryIds.includes(cat.id))
+      );
+    }
+    
     setFilteredBooks(filtered);
     setCurrentPage(1);
-  }, [search, books]);
+  }, [titleSearch, authorSearch, selectedCategoryIds, books]);
+
+  // -------------------- MANIPULAÇÃO DE CATEGORIAS --------------------
+  const toggleCategory = (categoryId: number) => {
+    setSelectedCategoryIds(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+  };
+
+  const clearFilters = () => {
+    setTitleSearch("");
+    setAuthorSearch("");
+    setSelectedCategoryIds([]);
+  };
+
+  const getSelectedCategoriesText = () => {
+    if (selectedCategoryIds.length === 0) return "Todas as categorias";
+    if (selectedCategoryIds.length === 1) {
+      const category = categories.find(c => c.id === selectedCategoryIds[0]);
+      return category?.name || "1 categoria";
+    }
+    return `${selectedCategoryIds.length} categorias`;
+  };
 
   // -------------------- CRUD --------------------
   const handleSaveBook = async (bookData: any) => {
-  if (!token) return;
+    if (!token) return;
+    setLoading(true);
     try {
-      // Preparar payload com livros + cópias
       const bookPayload: any = {
         title: bookData.title,
         author: bookData.author,
@@ -122,40 +200,102 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
         }));
       }
 
-      await apiCreateBook(token, bookPayload);
+      console.log("Enviando dados para API:", bookPayload);
+      
+      if (bookData.id) {
+        await apiUpdateBook(token, bookData.id, bookPayload);
+        alert("Livro atualizado com sucesso!");
+      } else {
+        await apiCreateBook(token, bookPayload);
+        alert("Livro criado com sucesso!");
+      }
 
-      const data = await apiGetBooks(token);
-      const booksWithCalculations = data.map((book: Book) => ({
-        ...book,
-        total_copies: book.copies?.length || 0,
-        available_copies: book.copies?.filter(copy => copy.status === 'available').length || 0
-      }));
-      setBooks(booksWithCalculations);
+      await fetchBooks();
       setShowBookModal(false);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Erro ao salvar livro:", err);
+      alert(err.message || "Erro ao salvar livro");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleUpdateBook = async (bookData: any) => {
+    if (!token || !bookData.id) return;
+    setLoading(true);
+    try {
+      const bookPayload: any = {
+        title: bookData.title,
+        author: bookData.author,
+        description: bookData.description,
+        category_ids: bookData.category_ids,
+      };
+
+      console.log("Atualizando livro ID:", bookData.id, bookPayload);
+      await apiUpdateBook(token, bookData.id, bookPayload);
+      
+      await fetchBooks();
+      setShowBookModal(false);
+      alert("Livro atualizado com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao atualizar livro:", err);
+      alert(err.message || "Erro ao atualizar livro");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateBook = async (bookData: any) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const bookPayload: any = {
+        title: bookData.title,
+        author: bookData.author,
+        description: bookData.description,
+        category_ids: bookData.category_ids,
+      };
+
+      if (bookData.copies && bookData.copies.length > 0) {
+        bookPayload.copies = bookData.copies.map((copy: BookCopy) => ({
+          edition: copy.edition,
+          status: copy.status
+        }));
+      }
+
+      console.log("Criando novo livro:", bookPayload);
+      await apiCreateBook(token, bookPayload);
+      
+      await fetchBooks();
+      setShowBookModal(false);
+      alert("Livro criado com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao criar livro:", err);
+      alert(err.message || "Erro ao criar livro");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteBook = async (book: Book) => {
     if (!token || !book.id) return;
+    
     if (!window.confirm(`Tem certeza que deseja remover o livro "${book.title}"?`)) {
       return;
     }
 
+    setLoading(true);
     try {
+      console.log("Deletando livro ID:", book.id);
       await apiDeleteBook(token, book.id);
-      const data = await apiGetBooks(token);
-      const booksWithCalculations = data.map((book: Book) => ({
-        ...book,
-        total_copies: book.copies?.length || 0,
-        available_copies: book.copies?.filter(copy => copy.status === 'available').length || 0
-      }));
-      setBooks(booksWithCalculations);
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao remover livro.");
+      
+      await fetchBooks();
+      alert("Livro removido com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao deletar livro:", err);
+      alert(err.message || "Erro ao remover livro");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,22 +304,59 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
     setShowBookModal(true);
   };
 
-  const handleViewCopies = (bookId: number) => {
-    navigate(`/books/${bookId}/copies`);
+  const handleViewCopies = async (book: Book) => {
+    if (!token || !book.id) return;
+    
+    setLoading(true);
+    try {
+      const copiesData = await apiGetCopiesByBook(token, book.id);
+      setSelectedBookCopies({
+        ...book,
+        copies: copiesData
+      });
+      setShowCopiesModal(true);
+    } catch (err) {
+      console.error("Erro ao buscar exemplares:", err);
+      alert("Erro ao carregar exemplares");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateCopy = async (copyId: number, copyData: any) => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      await apiUpdateCopy(token, copyId, copyData);
+      if (selectedBookCopies?.id) {
+        const copiesData = await apiGetCopiesByBook(token, selectedBookCopies.id);
+        setSelectedBookCopies({
+          ...selectedBookCopies,
+          copies: copiesData
+        });
+      }
+      alert("Exemplar atualizado com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao atualizar exemplar:", err);
+      alert(err.message || "Erro ao atualizar exemplar");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateCategory = async (name: string) => {
     if (!token) return;
     try {
-      // Você precisará implementar apiCreateCategory
-      // await apiCreateCategory(token, name);
-      console.log('Criar categoria:', name);
-      // Após criar, recarregar as categorias
-      // const categoriesData = await apiGetCategories(token);
-      // setCategories(categoriesData);
-    } catch (err) {
-      console.error(err);
-      throw new Error("Erro ao criar categoria");
+      const newCategory = await apiCreateCategory(token, name);
+      
+      const categoriesData = await apiGetCategories(token);
+      setCategories(categoriesData);
+      
+      console.log("Categoria criada:", newCategory);
+      return newCategory;
+    } catch (err: any) {
+      console.error("Erro ao criar categoria:", err);
+      throw new Error(err.message || "Erro ao criar categoria");
     }
   };
 
@@ -192,19 +369,107 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
   // -------------------- RENDER --------------------
   return (
     <BaseLayout userName={userName} isAdmin={isAdmin}>
-      <div className="container p-4">
-        <h1 className="mb-4">Biblioteca</h1>
+            <div className="container py-4">
+        {/* Header */}
+        <div className="row mb-4">
+          <div className="col">
+            <h2>
+              <i className="bi bi-people me-2"></i>Livros
+            </h2>
+            <p className="text-muted">
+              <i className="bi bi-info-circle me-1"></i>
+              Cadastre e edite os livros da biblioteca
+            </p>
+          </div>
+        </div>
 
-        {/* ---------------- FILTRO DE PESQUISA ---------------- */}
+        {loading && (
+          <div className="alert alert-info">Carregando...</div>
+        )}
+
+        {/* ---------------- FILTROS DE PESQUISA ---------------- */}
         <div className="row mb-3">
-          <div className="col-md-6 mb-2">
+          <div className="col-md-3 mb-2">
+            <label className="form-label">Título</label>
             <input
               type="text"
               className="form-control"
-              placeholder="Pesquisar por título, autor ou categoria..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Pesquisar por título..."
+              value={titleSearch}
+              onChange={(e) => setTitleSearch(e.target.value)}
+              disabled={loading}
             />
+          </div>
+          
+          <div className="col-md-3 mb-2">
+            <label className="form-label">Autor</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Pesquisar por autor..."
+              value={authorSearch}
+              onChange={(e) => setAuthorSearch(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="col-md-4 mb-2">
+            <label className="form-label">Categorias</label>
+            <div className="dropdown">
+              <button
+                className="form-control text-start dropdown-toggle"
+                type="button"
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                disabled={loading}
+              >
+                {getSelectedCategoriesText()}
+              </button>
+              
+              {isCategoryDropdownOpen && (
+                <div 
+                  className="dropdown-menu show w-100 p-3"
+                  style={{ maxHeight: '300px', overflowY: 'auto' }}
+                >
+                  <div className="row">
+                    {categories.map(category => (
+                      <div key={category.id} className="col-md-6 mb-2">
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={selectedCategoryIds.includes(category.id)}
+                            onChange={() => toggleCategory(category.id)}
+                            id={`filter-category-${category.id}`}
+                          />
+                          <label 
+                            className="form-check-label" 
+                            htmlFor={`filter-category-${category.id}`}
+                          >
+                            {category.name}
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {categories.length === 0 && (
+                    <div className="text-muted text-center">
+                      Nenhuma categoria disponível
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="col-md-2 mb-2 d-flex align-items-end">
+            <button
+              className="btn btn-outline-secondary w-100"
+              onClick={clearFilters}
+              disabled={loading}
+            >
+              Limpar
+            </button>
           </div>
         </div>
 
@@ -212,11 +477,17 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
         <div className="card shadow-lg mb-3">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="card-title mb-0">Livros</h5>
+              <h5 className="card-title mb-0">
+                Livros ({filteredBooks.length})
+                {(titleSearch || authorSearch || selectedCategoryIds.length > 0) && (
+                  <small className="text-muted ms-2">(filtrado)</small>
+                )}
+              </h5>
               <div className="d-flex gap-2">
                 <button
                   className="btn btn-primary"
                   onClick={() => navigate("/categories")}
+                  disabled={loading}
                 >
                   Categorias
                 </button>
@@ -226,6 +497,7 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                     setSelectedBook(null);
                     setShowBookModal(true);
                   }}
+                  disabled={loading}
                 >
                   + Novo Livro
                 </button>
@@ -245,74 +517,77 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentBooks.length === 0 && (
+                  {currentBooks.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center">
-                        Nenhum livro encontrado
+                      <td colSpan={6} className="text-center py-4">
+                        {loading ? "Carregando..." : "Nenhum livro encontrado"}
                       </td>
                     </tr>
+                  ) : (
+                    currentBooks.map((book) => (
+                      <tr 
+                        key={book.id} 
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleViewCopies(book)}
+                        title="Clique para ver os exemplares"
+                      >
+                        <td>
+                          <div>
+                            <strong>{book.title}</strong>
+                            {book.description && (
+                              <small className="d-block text-muted">
+                                {book.description.length > 50 
+                                  ? `${book.description.substring(0, 50)}...` 
+                                  : book.description}
+                              </small>
+                            )}
+                          </div>
+                        </td>
+                        <td>{book.author}</td>
+                        <td>
+                          <div className="d-flex flex-wrap gap-1">
+                            {book.categories && book.categories.length > 0 ? (
+                              book.categories.map(category => (
+                                <span key={category.id} className="badge bg-secondary">
+                                  {category.name}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-muted">Sem categorias</span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge bg-primary">{book.total_copies || 0}</span>
+                        </td>
+                        <td>
+                          <span className={`badge ${(book.available_copies || 0) > 0 ? 'bg-success' : 'bg-danger'}`}>
+                            {book.available_copies || 0}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              className="btn btn-sm btn-warning"
+                              onClick={() => handleEditBook(book)}
+                              title="Editar livro"
+                              disabled={loading}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() => handleDeleteBook(book)}
+                              title="Remover livro"
+                              disabled={loading}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  {currentBooks.map((book) => (
-                    <tr key={book.id}>
-                      <td>
-                        <div>
-                          <strong>{book.title}</strong>
-                          {book.description && (
-                            <small className="d-block text-muted">
-                              {book.description.length > 50 
-                                ? `${book.description.substring(0, 50)}...` 
-                                : book.description}
-                            </small>
-                          )}
-                        </div>
-                      </td>
-                      <td>{book.author}</td>
-                      <td>
-                        <div className="d-flex flex-wrap gap-1">
-                          {book.categories && book.categories.length > 0 ? (
-                            book.categories.map(category => (
-                              <span key={category.id} className="badge bg-secondary">
-                                {category.name}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-muted">Sem categorias</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>{book.total_copies || 0}</td>
-                      <td>
-                        <span className={`badge ${(book.available_copies || 0) > 0 ? 'bg-success' : 'bg-danger'}`}>
-                          {book.available_copies || 0}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="d-flex gap-1">
-                          <button
-                            className="btn btn-sm btn-info"
-                            onClick={() => handleViewCopies(book.id!)}
-                            title="Ver exemplares"
-                          >
-                            Exemplares
-                          </button>
-                          <button
-                            className="btn btn-sm btn-warning"
-                            onClick={() => handleEditBook(book)}
-                            title="Editar livro"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDeleteBook(book)}
-                            title="Remover livro"
-                          >
-                            Remover
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
                 </tbody>
               </table>
             </div>
@@ -325,6 +600,7 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                     <button
                       className="page-link"
                       onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={loading}
                     >
                       Anterior
                     </button>
@@ -334,7 +610,11 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                       key={i + 1}
                       className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
                     >
-                      <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
+                      <button 
+                        className="page-link" 
+                        onClick={() => setCurrentPage(i + 1)}
+                        disabled={loading}
+                      >
                         {i + 1}
                       </button>
                     </li>
@@ -343,6 +623,7 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                     <button
                       className="page-link"
                       onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={loading}
                     >
                       Próximo
                     </button>
@@ -354,14 +635,27 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
         </div>
       </div>
 
-      {/* ---------------- MODAL ---------------- */}
+      {/* ---------------- MODAL DE LIVRO ---------------- */}
       {showBookModal && token && (
         <BookFormModal
           book={selectedBook}
           categories={categories}
           onClose={() => setShowBookModal(false)}
-          onSave={handleSaveBook}
+          onSave={selectedBook ? handleUpdateBook : handleCreateBook}
           onCreateCategory={handleCreateCategory}
+        />
+      )}
+
+      {/* ---------------- MODAL DE EXEMPLARES ---------------- */}
+      {showCopiesModal && selectedBookCopies && token && (
+        <CopiesModal
+          book={selectedBookCopies}
+          copies={selectedBookCopies.copies || []}
+          onClose={() => {
+            setShowCopiesModal(false);
+            setSelectedBookCopies(null);
+          }}
+          onUpdateCopy={isAdmin ? handleUpdateCopy : undefined}
         />
       )}
     </BaseLayout>

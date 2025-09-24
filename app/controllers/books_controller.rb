@@ -1,58 +1,108 @@
 class BooksController < ApplicationController
   before_action :authorize_request
   before_action :require_staff, only: %i[new create edit update destroy]
-  before_action :set_book, only: %i[show update destroy]
+  before_action :set_book, only: %i[show update destroy copies]
 
   def index
-    @books = Book.includes(:categories).all
-    render json: @books.map { |book| 
-      book.as_json(
-        methods: [:total_copies],
-        include: { categories: { only: [:id, :name] } }
-      )
-    }
+    if params[:search].present?
+      search_term = "%#{params[:search]}%"
+      @books = Book.includes(:categories, :copies)
+                  .where("title ILIKE ? OR author ILIKE ?", search_term, search_term)
+                  .references(:categories, :copies)
+    else
+      @books = Book.includes(:categories, :copies).all
+    end
+
+    render json: @books.as_json(
+      methods: [:total_copies, :available_copies],
+      include: {
+        categories: { only: [:id, :name] },
+        copies: { only: [:id, :edition, :status, :number] }
+      }
+    )
   end
 
   def show
-    render json: @book 
-    render json: @book.as_json(methods: [:total_copies], include: { categories: {only: [:id, :name] } } )
+    render json: @book.as_json(
+      methods: [:total_copies],
+      include: {
+        categories: { only: [:id, :name] },
+        copies: { only: [:id, :edition, :status, :number] }
+      }
+    )
   end
 
-  def new
-    @book = Book.new(book_params)
+
+  # NOVO ENDPOINT: GET /books/:id/copies
+  def copies
+    copies = @book.copies
+
+    render json: copies.as_json(
+      only: [:id, :edition, :status, :number],
+      methods: [:book_id]
+    )
   end
 
   def create
-    @book = Book.new(book_params)
+    book_attrs = {
+      title: params[:title],
+      author: params[:author],
+      description: params[:description]
+    }.compact
+
+    @book = Book.new(book_attrs)
+    
     if @book.save
-      assign_categories(@book)
-      render json: { message: "Livro cadastrado com sucesso.", book: @book }, status: :created
+      assign_categories(@book) if params[:category_ids].present?
+      create_copies(@book) if params[:copies].present?
+      
+      render json: { 
+        message: "Livro cadastrado com sucesso.", 
+        book: @book.as_json(
+          methods: [:total_copies],
+          include: {
+            categories: { only: [:id, :name] },
+            copies: { only: [:id, :edition, :status, :number] }
+          }
+        )
+      }, status: :created
     else
       render json: { errors: @book.errors.full_messages.join(", ") }, status: :unprocessable_entity
     end
   end
 
   def update
+    book_attrs = {
+      title: params[:title],
+      author: params[:author],
+      description: params[:description]
+    }.compact
 
-    book_attrs = book_params.to_h.compact
-    category_ids = params[:category_ids] || (params[:book] && params[:book][:category_ids])
-
-    if book_attrs.blank? && category_ids.blank?
+    if book_attrs.blank? && params[:category_ids].blank?
       render json: { message: "Nenhuma alteração recebida" }, status: :no_content
       return
     end
 
-    if @book.update(book_params)
-      assign_categories(@book) if category_ids.present?
-      render json: { message: "Livro atualizado com sucesso.", book: @book}
+    if @book.update(book_attrs)
+      assign_categories(@book) if params[:category_ids].present?
+      render json: { 
+        message: "Livro atualizado com sucesso.", 
+        book: @book.as_json(
+          methods: [:total_copies],
+          include: {
+            categories: { only: [:id, :name] },
+            copies: { only: [:id, :edition, :status, :number] }
+          }
+        )
+      }
     else
       render json: { errors: @book.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    @client.destroy
-    render json: { message: "Cliente removido com sucesso." }
+    @book.destroy
+    render json: { message: "Livro removido com sucesso." }, status: :ok
   end
 
   private
@@ -64,12 +114,12 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:title, :author, :published_at, category_ids: [])
+    params.permit(:title, :author, :description, category_ids: [], copies: [:edition, :status, :number])
   end
 
   def require_staff
     unless @current_user&.has_access?(:Administrator) || @current_user&.has_access?(:Librarian)
-      render json: { error: "Aceso negado: precisa ser funcionpario" }, status: :forbidden
+      render json: { error: "Acesso negado: precisa ser funcionário" }, status: :forbidden
     end
   end
 
@@ -85,21 +135,19 @@ class BooksController < ApplicationController
     end
   end
 
- def assign_categories(user)
-    return unless params[:categories_ids].present? || (params[:book] && params[:book][:categories_ids].present?)
+  def assign_categories(book)
+    return unless params[:category_ids].present?
 
-    new_categories_ids = params[:categories_ids] || params[:book][:categories_ids]
-    new_categories_ids = Array(new_categories_ids).map(&:to_i).reject(&:blank?)
-    current_categories_ids = book.categories.pluck(:id)
+    new_category_ids = Array(params[:category_ids]).map(&:to_i).reject(&:zero?)
+    book.category_ids = new_category_ids
+  end
 
-    to_add = new_categories_ids - current_categories_ids
-    to_add.each do |category_id|
-    BookCategory.create(book_id: book.id, category_id: category_id)
-    end
+  def create_copies(book)
+    return unless params[:copies].present?
 
-    to_remove = current_categories_ids - current_categories_ids
-    BookCategory.where(book_id: book_id, category_id: to_remove).destroy_all
-    to_remove.each do |category_id|
+    Array(params[:copies]).each do |copy_params|
+      copy_attrs = copy_params.permit(:edition, :status, :number).merge(book_id: book.id)
+      Copy.create(copy_attrs)
     end
   end
 end

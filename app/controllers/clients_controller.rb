@@ -5,9 +5,19 @@ class ClientsController < ApplicationController
 
   # GET /clients
   def index
-    @clients = Client.all
+    if params[:search].present?
+      query = params[:search].strip
+      @clients = Client.where(
+          "\"fullName\" ILIKE :q OR cpf ILIKE :q OR email ILIKE :q",
+          q: "%#{query}%"
+      )
+    else
+      @clients = Client.all
+    end
+
     render json: @clients
   end
+
 
   # GET /clients/:id
   def show

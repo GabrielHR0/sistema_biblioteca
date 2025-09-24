@@ -9,7 +9,8 @@ import { AdminDashboard } from "@pages/dashboard/AdminDashboard";
 import { AdminUsers } from "@pages/users/AdminUsers";
 import { Books } from "@pages/books/Books";
 import { Categories } from "@pages/books/Categories";
-
+import { LoanPage } from "@pages/loan/LoanPage";
+import { MembersPage } from "@pages/clients/Cients";
 interface ProtectedRouteProps {
   children: ReactNode;
 }
@@ -47,8 +48,33 @@ export const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/password-reset/:token" element={<ResetPassword />} />
-        <Route path="/categories" element={<Categories userName={userName} isAdmin={isAdmin}/>} />
 
+        <Route
+          path="/membros"
+          element={
+            <ProtectedRoute>
+              <MembersPage userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <Categories userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/emprestimos"
+          element={
+            <ProtectedRoute>
+              <LoanPage userName={userName} isAdmin={isAdmin} />
+            </ProtectedRoute>
+          }
+        />        
 
         <Route
           path="/dashboard"

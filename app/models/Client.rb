@@ -22,6 +22,7 @@ class Client < ApplicationRecord
   def set_password
     if password.blank?
       generated_password = generatePassword
+      puts "Generated password for client #{fullName} (#{email}): #{generated_password}"
       self.password = generated_password
       self.password_confirmation = generated_password
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_24_012005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,6 +30,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
     t.integer "total_copies", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "description"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -62,6 +63,44 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
     t.index ["book_id"], name: "index_copies_on_book_id"
   end
 
+  create_table "email_accounts", force: :cascade do |t|
+    t.bigint "library_id", null: false
+    t.string "gmail_user_email"
+    t.text "gmail_oauth_token"
+    t.text "gmail_refresh_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_email_accounts_on_library_id"
+  end
+
+  create_table "fine_policies", force: :cascade do |t|
+    t.bigint "library_id", null: false
+    t.decimal "daily_fine"
+    t.decimal "max_fine"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_fine_policies_on_library_id"
+  end
+
+  create_table "libraries", force: :cascade do |t|
+    t.string "name"
+    t.string "phone"
+    t.string "address"
+    t.string "logo_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "loan_policies", force: :cascade do |t|
+    t.bigint "library_id", null: false
+    t.integer "loan_limit"
+    t.integer "loan_period_days"
+    t.integer "renewals_allowed"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_loan_policies_on_library_id"
+  end
+
   create_table "loans", force: :cascade do |t|
     t.bigint "copy_id", null: false
     t.bigint "client_id", null: false
@@ -71,6 +110,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
     t.string "status", default: "ongoing", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "renewals_count"
     t.index ["client_id"], name: "index_loans_on_client_id"
     t.index ["copy_id"], name: "index_loans_on_copy_id"
     t.index ["user_id"], name: "index_loans_on_user_id"
@@ -105,6 +145,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_21_203927) do
   add_foreign_key "book_categories", "books"
   add_foreign_key "book_categories", "categories"
   add_foreign_key "copies", "books"
+  add_foreign_key "email_accounts", "libraries"
+  add_foreign_key "fine_policies", "libraries"
+  add_foreign_key "loan_policies", "libraries"
   add_foreign_key "loans", "clients"
   add_foreign_key "loans", "copies"
   add_foreign_key "loans", "users"

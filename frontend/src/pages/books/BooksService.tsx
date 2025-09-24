@@ -64,11 +64,16 @@ export const apiDeleteBook = async (token: string, bookId: number) => {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || "Erro ao deletar livro");
+    throw new Error(errorData.error || errorData.message || "Erro ao deletar livro");
+  }
+
+  if (response.status === 204) {
+    return { message: "Livro deletado com sucesso" };
   }
 
   return response.json();
 };
+
 
 // -------------------- CATEGORIES --------------------
 export const apiGetCategories = async (token: string) => {
@@ -88,19 +93,53 @@ export const apiGetCategories = async (token: string) => {
   return response.json();
 };
 
-export const apiCreateCategory = async (token: string, category: { name: string }) => {
+export const apiCreateCategory = async (token: string, name: string | any) => {
   const response = await fetch(`${API_URL}/categories`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`,
     },
-    body: JSON.stringify({ category: { name: category.name } }),
+    body: JSON.stringify({ name: name  }),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.errors || errorData.error || "Erro ao criar categoria");
+  }
+
+  return response.json();
+};
+
+export const apiUpdateCategory = async (token: string, categoryId: number, categoryData: any) => {
+  const response = await fetch(`${API_URL}/categories/${categoryId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name: categoryData.name }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.errors || errorData.error || "Erro ao atualizar categoria");
+  }
+
+  return response.json();
+};
+
+export const apiDeleteCategory = async (token: string, categoryId: number) => {
+  const response = await fetch(`${API_URL}/categories/${categoryId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Erro ao excluir categoria");
   }
 
   return response.json();
@@ -173,24 +212,6 @@ export const apiCreateMultipleCopies = async (token: string, bookId: number, qua
   return Promise.all(responses.map(r => r.json()));
 };
 
-export const apiUpdateCopy = async (token: string, copyId: number, copyData: any) => {
-  const response = await fetch(`${API_URL}/copies/${copyId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify(copyData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.errors || errorData.error || "Erro ao atualizar cópia");
-  }
-
-  return response.json();
-};
-
 export const apiDeleteCopy = async (token: string, copyId: number) => {
   const response = await fetch(`${API_URL}/copies/${copyId}`, {
     method: "DELETE",
@@ -221,6 +242,41 @@ export const apiUpdateBookCategories = async (token: string, bookId: number, cat
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.errors || errorData.error || "Erro ao atualizar categorias do livro");
+  }
+
+  return response.json();
+};
+
+export const apiGetCopiesByBook = async (token: string, bookId: number) => {
+  const response = await fetch(`${API_URL}/books/${bookId}/copies`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Erro ao buscar exemplares");
+  }
+
+  return response.json();
+};
+
+export const apiUpdateCopy = async (token: string, copyId: number, copyData: any) => {
+  const response = await fetch(`${API_URL}/copies/${copyId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ copy: copyData }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.errors || errorData.error || "Erro ao atualizar exemplar");
   }
 
   return response.json();

@@ -12,4 +12,8 @@ class Book < ApplicationRecord
   def total_copies
     read_attribute(:total_copies) || 0
   end
+  
+  def available_copies
+    copies.where(status: 'available').count
+  end
 end

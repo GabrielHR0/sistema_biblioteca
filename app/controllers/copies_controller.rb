@@ -1,6 +1,6 @@
 class CopiesController < ApplicationController
   before_action :authorize_request
-  before_action :require_staff, only: %i[new create edit update destroy]
+  before_action :require_staff, only: %i[new create update destroy]
   before_action :set_copy, only: %i[show update destroy]
 
   def index
@@ -34,7 +34,7 @@ class CopiesController < ApplicationController
     end
 
     if @copy.update(copy_params)
-      render json: { message: "Cópia atualizada com sucesso.", copy: @copy}
+      render json: { message: "Cópia atualizada com sucesso.", copy: @copy }
     else
       render json: { errors: @copy.errors.full_messages }, status: :unprocessable_entity
     end
@@ -54,7 +54,8 @@ class CopiesController < ApplicationController
   end
 
   def copy_params
-    params.require(:copy).permit(:book_id, :status, :acquisition_date, :condition)
+    # CORREÇÃO: Adicionar :edition e :number aos parâmetros permitidos
+    params.require(:copy).permit(:book_id, :edition, :status, :number, :acquisition_date, :condition)
   end
 
   def require_staff
