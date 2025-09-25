@@ -3,13 +3,26 @@ class CopiesController < ApplicationController
   before_action :require_staff, only: %i[new create update destroy]
   before_action :set_copy, only: %i[show update destroy]
 
-  def index
-    @copies = Copy.all
-    render json: @copies
-  end
+def index
+  @copies = Copy.includes(:loans).all
+
+  render json: @copies.as_json(
+    include: {
+      loans: {
+        only: [:id, :client_id, :user_id, :loan_date, :due_date, :status, :renewals_count]
+      }
+    }
+  )
+end
 
   def show
-    render json: @copy
+    render json: @copy.as_json(
+    include: {
+      loans: {
+        only: [:id, :client_id, :user_id, :loan_date, :due_date, :status, :renewals_count]
+      }
+    }
+  )
   end
 
   def new

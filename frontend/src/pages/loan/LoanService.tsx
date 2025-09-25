@@ -63,6 +63,26 @@ export const LoanService = {
     return response.json();
   },
 
+  async getLoan(token: string, loanId: number): Promise<any> {
+    console.log(loanId);
+    const response = await fetch(`${API_URL}/loans/${loanId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    console.log(response);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao buscar empréstimo");
+    }
+
+    return response.json();
+  },
+
   async createLoan(token: string, loanData: {
     copy_id: number;
     client_id: number;
@@ -79,6 +99,23 @@ export const LoanService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.errors || errorData.error || "Erro ao realizar empréstimo");
+    }
+
+    return response.json();
+  },
+
+  async returnLoan(token: string, loanId: number): Promise<any> {
+    const response = await fetch(`${API_URL}/loans/${loanId}/return`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.errors || errorData.error || "Erro ao registrar devolução");
     }
 
     return response.json();
@@ -117,6 +154,71 @@ export const LoanService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.errors || errorData.error || "Erro ao criar cliente");
+    }
+
+    return response.json();
+  },
+
+  async returnLoanAlternative(token: string, loanId: number, returnData?: {
+    return_date?: string;
+    notes?: string;
+  }): Promise<any> {
+    const response = await fetch(`${API_URL}/loans/${loanId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        loan: {
+          return_date: returnData?.return_date || new Date().toISOString(),
+          status: "returned",
+          ...returnData
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.errors || errorData.error || "Erro ao registrar devolução");
+    }
+
+    return response.json();
+  },
+
+  async getActiveLoans(token: string, clientId?: number): Promise<any[]> {
+    const url = clientId 
+      ? `${API_URL}/loans?status=active&client_id=${clientId}`
+      : `${API_URL}/loans?status=active`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao buscar empréstimos ativos");
+    }
+
+    return response.json();
+  },
+
+  async getCopyLoanHistory(token: string, copyId: number): Promise<any[]> {
+    const response = await fetch(`${API_URL}/copies/${copyId}/loans`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao buscar histórico de empréstimos");
     }
 
     return response.json();

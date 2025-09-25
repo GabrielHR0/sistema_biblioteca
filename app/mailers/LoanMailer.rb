@@ -1,14 +1,30 @@
 class LoanMailer < ApplicationMailer
   def return_reminder(loan)
-    setup_smtp
-
     @loan = loan
     @client = loan.client
     @copy = loan.copy
     @due_date = loan.due_date
 
+    # Pega a conta de email da biblioteca
+    library = Library.first
+    email_account = library.email_account
+    raise "Conta de email não configurada" unless email_account
+
+    # Configura SMTP dinamicamente
+    self.class.smtp_settings = {
+      address:              "smtp.gmail.com",
+      port:                 587,
+      domain:               "gmail.com",
+      authentication:       :xoauth2,
+      user_name:            email_account.gmail_user_email,
+      oauth2_token:         email_account.gmail_oauth_token,
+      enable_starttls_auto: true
+    }
+
+    # Envia o email usando o from dinâmico
     mail(
       to: @client.email,
+      from: email_account.gmail_user_email,  # <- aqui vem do banco
       subject: "Lembrete: livro #{@copy.title} vence em #{@due_date.strftime('%d/%m/%Y')}"
     ) do |format|
       format.text do
@@ -23,26 +39,5 @@ class LoanMailer < ApplicationMailer
         MESSAGE
       end
     end
-  end
-
-  private
-
-  def setup_smtp
-    library = Library.first
-    email_account = library.email_account
-    raise "Conta de email não configurada" unless email_account
-
-    smtp_settings = {
-      address:              "smtp.gmail.com",
-      port:                 587,
-      domain:               "gmail.com",
-      authentication:       :xoauth2,
-      user_name:            email_account.gmail_user_email,
-      oauth2_token:         email_account.gmail_oauth_token,
-      enable_starttls_auto: true
-    }
-
-    self.class.smtp_settings = smtp_settings
-    self.default from: email_account.gmail_user_email
   end
 end

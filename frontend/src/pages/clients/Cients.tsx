@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { BaseLayout } from "@layouts/BaseLayout";
 import { useAuth } from "../auth/authContext";
 import { apiGetClients, createClient, Client } from "./ClientService";
@@ -9,11 +10,11 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
   isAdmin,
 }) => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
 
   // -------------------- FETCH CLIENTS --------------------
   const fetchClients = async () => {
@@ -52,18 +53,6 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
     );
     setFilteredClients(filtered);
   }, [searchTerm, clients]);
-
-  // -------------------- HANDLE SUBMIT NEW MEMBER --------------------
-  const handleCreateClient = async (newClient: Client) => {
-    if (!token) return;
-    try {
-      await createClient(newClient);
-      await fetchClients();
-      setShowModal(false);
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
 
   const formatCPF = (cpf?: string) =>
     cpf ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "Não informado";
@@ -114,15 +103,6 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
               >
                 <i className="bi bi-x-circle me-2"></i>Limpar
               </button>
-              {isAdmin && (
-                <button
-                  className="btn btn-success"
-                  onClick={() => setShowModal(true)}
-                  disabled={loading}
-                >
-                  <i className="bi bi-person-plus me-2"></i>Novo Membro
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -150,7 +130,7 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
                 <div 
                   className="card h-100 member-card"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => console.log("Abrir detalhes do membro:", client.id)}
+                  onClick={() => navigate(`/members/${client.id}`)} // <- REDIRECIONA
                 >
                   <div className="card-body d-flex flex-column">
                     {/* Header com nome e status */}
@@ -196,23 +176,9 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
                       )}
                     </div>
 
-                    {/* Footer com ação */}
+                    {/* Footer */}
                     <div className="mt-auto pt-2 border-top">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <small className="text-muted">
-                          ID: #{client.id}
-                        </small>
-                        <button 
-                          className="btn btn-outline-primary btn-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log("Ações do membro:", client.id);
-                          }}
-                        >
-                          <i className="bi bi-eye me-1"></i>
-                          Ver
-                        </button>
-                      </div>
+                      <small className="text-muted">ID: #{client.id}</small>
                     </div>
                   </div>
                 </div>
@@ -232,14 +198,6 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
         )}
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <NewClientModal
-          onClose={() => setShowModal(false)}
-          onSave={handleCreateClient}
-        />
-      )}
-
       <style>{`
         .member-card {
           transition: all 0.3s ease;
@@ -252,122 +210,7 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
           box-shadow: 0 8px 25px rgba(0,0,0,0.15);
           border-color: #007bff;
         }
-        
-        .member-card .card-title {
-          font-size: 1.1rem;
-          font-weight: 600;
-        }
-        
-        .member-card .badge {
-          font-size: 0.7rem;
-          font-weight: 500;
-        }
-        
-        .member-card small {
-          font-size: 0.85rem;
-        }
-        
-        .member-card .btn-sm {
-          font-size: 0.8rem;
-          padding: 0.25rem 0.75rem;
-        }
       `}</style>
     </BaseLayout>
-  );
-};
-
-// -------------------- MODAL --------------------
-const NewClientModal: React.FC<{
-  onClose: () => void;
-  onSave: (client: Client) => void;
-}> = ({ onClose, onSave }) => {
-  const [form, setForm] = useState<Client>({
-    fullName: "",
-    cpf: "",
-    email: "",
-    phone: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(form);
-  };
-
-  return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-dialog-centered">
-        <form className="modal-content" onSubmit={handleSubmit}>
-          <div className="modal-header bg-primary text-white">
-            <h5 className="modal-title">
-              <i className="bi bi-person-plus me-2"></i>Novo Membro
-            </h5>
-            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
-          </div>
-
-          <div className="modal-body">
-            <div className="row g-3">
-              <div className="col-12">
-                <label className="form-label fw-semibold">Nome Completo *</label>
-                <input 
-                  className="form-control" 
-                  name="fullName" 
-                  value={form.fullName} 
-                  onChange={handleChange} 
-                  required 
-                  placeholder="Digite o nome completo"
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label fw-semibold">CPF *</label>
-                <input 
-                  className="form-control" 
-                  name="cpf" 
-                  value={form.cpf} 
-                  onChange={handleChange} 
-                  required 
-                  placeholder="000.000.000-00"
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label fw-semibold">Email</label>
-                <input 
-                  className="form-control" 
-                  type="email" 
-                  name="email" 
-                  value={form.email} 
-                  onChange={handleChange} 
-                  placeholder="email@exemplo.com"
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label fw-semibold">Telefone</label>
-                <input 
-                  className="form-control" 
-                  name="phone" 
-                  value={form.phone} 
-                  onChange={handleChange} 
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
-              <i className="bi bi-x-circle me-2"></i>Cancelar
-            </button>
-            <button type="submit" className="btn btn-success">
-              <i className="bi bi-check-circle me-2"></i>Salvar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
   );
 };

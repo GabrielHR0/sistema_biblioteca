@@ -11,6 +11,17 @@ Rails.application.routes.draw do
   resources :categories
   resources :roles
 
+resources :libraries do
+  resource :fine_policy, only: [:show, :create, :update]
+  resource :notification_setting, only: [:show, :create, :update]
+  resource :loan_policy, only: [:show, :create, :update]
+  
+  resource :email_account, only: [:show, :create, :update], controller: 'email_accounts' do
+    get 'authorize_google', on: :member
+    post 'callback', on: :member
+  end
+end
+
   # Rotas para livros e suas cópias
   resources :books
   resources :copies

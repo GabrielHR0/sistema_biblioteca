@@ -1,3 +1,4 @@
+
 class EmailAccountsController < ApplicationController
   before_action :authorize_request
   before_action :require_admin, only: [:create, :update]
@@ -32,10 +33,58 @@ class EmailAccountsController < ApplicationController
     end
   end
 
+  def authorize_google
+    # Verifica se o email_account existe
+    unless @library.email_account
+      return render json: { error: 'Conta de email não configurada. Configure o email primeiro.' }, status: :unprocessable_entity
+    end
+
+    # Verifica se o email está preenchido
+    unless @library.email_account.gmail_user_email.present?
+      return render json: { error: 'Email do Gmail não configurado. Preencha o email primeiro.' }, status: :unprocessable_entity
+    end
+
+    begin
+      service = GmailOauthService.new(@library.email_account.gmail_user_email)
+      url = service.authorization_url
+      render json: { url: url }
+    rescue => e
+      Rails.logger.error "Erro no authorize_google: #{e.message}"
+      render json: { error: "Erro ao gerar URL de autorização: #{e.message}" }, status: :internal_server_error
+    end
+  end
+
+  def callback
+    code = params[:code]
+    
+    unless @library.email_account
+      return render json: { error: 'Conta de email não configurada' }, status: :unprocessable_entity
+    end
+
+    begin
+      service = GmailOauthService.new(@library.email_account.gmail_user_email)
+      credentials = service.fetch_credentials(code)
+
+      if @library.email_account.update(
+        gmail_oauth_token: credentials.access_token,
+        gmail_refresh_token: credentials.refresh_token
+      )
+        render json: { message: 'Conta autorizada com sucesso!' }
+      else
+        render json: { error: @library.email_account.errors.full_messages.join(", ") }, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error "Erro no callback: #{e.message}"
+      render json: { error: "Erro ao autorizar conta: #{e.message}" }, status: :internal_server_error
+    end
+  end
+
   private
 
   def set_library
     @library = Library.find(params[:library_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Biblioteca não encontrada' }, status: :not_found
   end
 
   def set_email_account

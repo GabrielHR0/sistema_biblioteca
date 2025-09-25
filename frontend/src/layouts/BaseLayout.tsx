@@ -1,6 +1,6 @@
 import React from "react";
-import { AdminNavbar } from "../components/admin/AdminNavbar";
-import { PublicNavbar } from "../components/PublicNavbar";
+import { AdminNavbar } from "@components/admin/AdminNavbar";
+import { PublicNavbar } from "@components/public/PublicNavbar";
 
 interface BaseLayoutProps {
   children: React.ReactNode;

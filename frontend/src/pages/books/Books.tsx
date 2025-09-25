@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { BaseLayout } from "@layouts/BaseLayout";
 import {
   apiGetBooks,
@@ -8,10 +9,12 @@ import {
   apiGetCategories,
   apiCreateCategory,
   apiGetCopiesByBook,
-  apiUpdateCopy
+  apiUpdateCopy,
+  apiDeleteCopy,
+  apiGetCopies 
 } from "./BooksService";
-import { BookFormModal } from "@components/BookFormModal";
-import { CopiesModal } from "@components/CopiesModal";
+import { BookFormModal } from "@components/public/BookFormModal";
+import { CopiesModal } from "@components/public/CopiesModal";
 import { useAuth } from "../auth/authContext";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -29,11 +32,13 @@ export interface Category {
 export interface Loan {
   id?: number;
   copy_id: number;
-  user_id: number;
+  user_id: number | null;
+  client_id: number;
   loan_date: string;
   due_date: string;
-  return_date?: string;
+  return_date?: string | null;
   status: string;
+  renewals_count?: number | null;
 }
 
 export interface BookCopy {
@@ -41,10 +46,10 @@ export interface BookCopy {
   edition: string;
   status: "available" | "borrowed" | "lost";
   number?: number;
-  acquisition_date?: string;
-  condition?: string;
   book_id?: number;
   loans?: Loan[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Book {
@@ -78,6 +83,8 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
   const [loading, setLoading] = useState(false);
   const booksPerPage = 10;
   const navigate = useNavigate();
+  const location = useLocation();
+
 
   // -------------------- FETCH BOOKS --------------------
   const fetchBooks = async () => {
@@ -107,6 +114,18 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
       setLoading(false);
     }
   };
+  
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoryId = searchParams.get('category');
+    
+    if (categoryId) {
+      const categoryIdNum = parseInt(categoryId);
+      if (!isNaN(categoryIdNum)) {
+        setSelectedCategoryIds([categoryIdNum]);
+      }
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchBooks();
@@ -125,6 +144,34 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
     };
     fetchCategories();
   }, [token]);
+
+  // -------------------- FUNÇÃO PARA BUSCAR CÓPIAS COM EMPRÉSTIMOS --------------------
+  const fetchCopiesWithLoans = async (bookId: number) => {
+    if (!token) return [];
+    
+    try {
+      // Busca todas as cópias com informações completas de empréstimos
+      const allCopies = await apiGetCopies(token);
+      console.log("Todas as cópias recebidas:", allCopies);
+      
+      // Filtra apenas as cópias do livro específico
+      const bookCopies = allCopies.filter((copy: BookCopy) => copy.book_id === bookId);
+      console.log(`Cópias do livro ${bookId}:`, bookCopies);
+      
+      return bookCopies;
+    } catch (err) {
+      console.error("Erro ao buscar cópias:", err);
+      // Fallback: tenta buscar pelas cópias do livro se a API geral falhar
+      try {
+        const copiesData = await apiGetCopiesByBook(token, bookId);
+        console.log("Cópias do livro (fallback):", copiesData);
+        return copiesData;
+      } catch (fallbackErr) {
+        console.error("Erro no fallback ao buscar cópias:", fallbackErr);
+        return [];
+      }
+    }
+  };
 
   // -------------------- FILTRO --------------------
   useEffect(() => {
@@ -299,6 +346,39 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
     }
   };
 
+  const handleDeleteCopy = async (copyId: number) => {
+    if (!token) return;
+    
+    if (!window.confirm("Tem certeza que deseja excluir este exemplar?")) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log("Deletando exemplar ID:", copyId);
+      await apiDeleteCopy(token, copyId);
+      
+      // Atualizar a lista de exemplares após exclusão
+      if (selectedBookCopies?.id) {
+        const copiesData = await fetchCopiesWithLoans(selectedBookCopies.id);
+        setSelectedBookCopies({
+          ...selectedBookCopies,
+          copies: copiesData
+        });
+      }
+      
+      // Atualizar também a lista de livros para refletir as mudanças nos contadores
+      await fetchBooks();
+      
+      alert("Exemplar excluído com sucesso!");
+    } catch (err: any) {
+      console.error("Erro ao deletar exemplar:", err);
+      alert(err.message || "Erro ao excluir exemplar");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditBook = (book: Book) => {
     setSelectedBook(book);
     setShowBookModal(true);
@@ -309,7 +389,10 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
     
     setLoading(true);
     try {
-      const copiesData = await apiGetCopiesByBook(token, book.id);
+      // Agora usa a função que busca cópias com informações completas de empréstimos
+      const copiesData = await fetchCopiesWithLoans(book.id);
+      console.log("Dados dos exemplares com empréstimos:", copiesData);
+      
       setSelectedBookCopies({
         ...book,
         copies: copiesData
@@ -328,13 +411,19 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
     setLoading(true);
     try {
       await apiUpdateCopy(token, copyId, copyData);
+      
+      // Atualizar a lista de exemplares após edição
       if (selectedBookCopies?.id) {
-        const copiesData = await apiGetCopiesByBook(token, selectedBookCopies.id);
+        const copiesData = await fetchCopiesWithLoans(selectedBookCopies.id);
         setSelectedBookCopies({
           ...selectedBookCopies,
           copies: copiesData
         });
       }
+      
+      // Atualizar também a lista de livros para refletir as mudanças nos contadores
+      await fetchBooks();
+      
       alert("Exemplar atualizado com sucesso!");
     } catch (err: any) {
       console.error("Erro ao atualizar exemplar:", err);
@@ -369,12 +458,12 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
   // -------------------- RENDER --------------------
   return (
     <BaseLayout userName={userName} isAdmin={isAdmin}>
-            <div className="container py-4">
+      <div className="container py-4">
         {/* Header */}
         <div className="row mb-4">
           <div className="col">
             <h2>
-              <i className="bi bi-people me-2"></i>Livros
+              <i className="bi bi-book me-2"></i>Livros
             </h2>
             <p className="text-muted">
               <i className="bi bi-info-circle me-1"></i>
@@ -656,6 +745,7 @@ export const Books: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
             setSelectedBookCopies(null);
           }}
           onUpdateCopy={isAdmin ? handleUpdateCopy : undefined}
+          onDeleteCopy={isAdmin ? handleDeleteCopy : undefined}
         />
       )}
     </BaseLayout>

@@ -9,6 +9,14 @@ export interface Client {
   created_at?: string | any;
 }
 
+interface Loan {
+  id: number;
+  bookTitle: string;
+  dueDate: string;
+  returnedAt?: string | null;
+  status: "active" | "returned";
+}
+
 export const apiGetClients = async (token: string) => {
   const response = await fetch(`${API_URL}/clients`, {
     method: "GET",
@@ -65,4 +73,21 @@ export async function checkClientPassword(token: string, password: string, id: n
 
   return response.json()
 }
+
+export async function apiGetClientById(id: number, token: string): Promise<Client> {
+  const res = await fetch(`/api/clients/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Erro ao buscar cliente");
+  return res.json();
+}
+
+export async function apiGetLoansByClient(id: number, token: string): Promise<Loan[]> {
+  const res = await fetch(`/api/clients/${id}/loans`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Erro ao buscar empréstimos");
+  return res.json();
+}
+
 

@@ -28,21 +28,18 @@ export const AdminNavbar: React.FC<{ userName?: string }> = ({ userName }) => {
   const isActive = (url: string) => currentPath === url;
 
   const handleLogout = () => {
-    logout(); // limpa token e usuário
-    navigate("/login"); // redireciona para login
+    logout(); 
+    navigate("/login"); 
   };
 
   return (
     <div className="d-flex flex-column bg-light" style={{ width: "250px", height: "100vh", position: "fixed" }}>
-      {/* Cabeçalho */}
       <div className="d-flex align-items-center p-3 border-bottom">
         <i className="bi bi-person-circle fs-3 me-2"></i>
         <span className="fw-bold">{userName || "Usuário"}</span>
       </div>
 
-      {/* Conteúdo da sidebar */}
       <div className="flex-grow-1 overflow-auto">
-        {/* Principal */}
         <div className="mt-3">
           <h6 className="text-muted px-3">Principal</h6>
           <ul className="nav flex-column">

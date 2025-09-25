@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BaseLayout } from "@layouts/BaseLayout";
 import { LoanService } from "./LoanService";
-import { LoanModal } from "@components/LoanModal";
+import { LoanModal } from "@components/public/LoanModal";
 import { useAuth } from "../auth/authContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 

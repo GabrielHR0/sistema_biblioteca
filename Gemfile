@@ -31,6 +31,9 @@ gem 'sidekiq'
 
 gem 'sidekiq-scheduler'
 
+gem 'google-apis-gmail_v1'
+
+gem 'googleauth'
 
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]

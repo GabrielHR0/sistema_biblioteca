@@ -2,15 +2,17 @@ class LoanReminderJob < ApplicationJob
   queue_as :default
 
   def perform(*args)
-    Loan.includes(:client, :copy).where(status: "ongoing").find_each do |loan|
-      library = Library.first
-      next unless library&.notification_setting
+    library = Library.first
+    return unless library&.notification_setting
 
-      days_before = library.notification_setting.return_reminder_days
-      if loan.due_date == Date.today + days_before.days
-        LoanMailer.return_reminder(loan).deliver_later
-        puts "Lembrete enviado para #{loan.client.email} sobre #{loan.copy.title}"
-      end
+    days_before = library.notification_setting.return_reminder_days
+    reminder_date = Date.today + days_before.days
+
+    Loan.includes(:client, :copy).where(status: "ongoing").find_each do |loan|
+      next unless loan.due_date.to_date == reminder_date.to_date
+
+      LoanMailer.return_reminder(loan).deliver_later(queue: :mailers)
+      Rails.logger.info "Lembrete enviado para #{loan.client.email} sobre #{loan.copy.title}"
     end
   end
 end

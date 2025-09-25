@@ -100,7 +100,7 @@ export const apiCreateCategory = async (token: string, name: string | any) => {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`,
     },
-    body: JSON.stringify({ name: name  }),
+    body: JSON.stringify({ name }),
   });
 
   if (!response.ok) {

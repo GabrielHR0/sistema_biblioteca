@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_24_012005) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_24_180525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -116,6 +116,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_24_012005) do
     t.index ["user_id"], name: "index_loans_on_user_id"
   end
 
+  create_table "notification_settings", force: :cascade do |t|
+    t.bigint "library_id", null: false
+    t.boolean "notify_email"
+    t.boolean "notify_sms"
+    t.integer "return_reminder_days"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["library_id"], name: "index_notification_settings_on_library_id"
+  end
+
   create_table "roles", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
@@ -151,6 +161,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_24_012005) do
   add_foreign_key "loans", "clients"
   add_foreign_key "loans", "copies"
   add_foreign_key "loans", "users"
+  add_foreign_key "notification_settings", "libraries"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users", on_delete: :cascade
 end
