@@ -4,3 +4,5 @@
   - mailers
   - critical
 :timeout: 30
+:redis:
+  url: redis://localhost:6379/0

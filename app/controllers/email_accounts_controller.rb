@@ -34,50 +34,75 @@ class EmailAccountsController < ApplicationController
   end
 
   def authorize_google
-    # Verifica se o email_account existe
-    unless @library.email_account
-      return render json: { error: 'Conta de email não configurada. Configure o email primeiro.' }, status: :unprocessable_entity
-    end
+  Rails.logger.info "=== AUTHORIZE_GOOGLE INICIADO ==="
+  Rails.logger.info "Library ID: #{@library.id}"
+  Rails.logger.info "Email Account: #{@library.email_account.inspect}"
 
-    # Verifica se o email está preenchido
-    unless @library.email_account.gmail_user_email.present?
-      return render json: { error: 'Email do Gmail não configurado. Preencha o email primeiro.' }, status: :unprocessable_entity
-    end
-
-    begin
-      service = GmailOauthService.new(@library.email_account.gmail_user_email)
-      url = service.authorization_url
-      render json: { url: url }
-    rescue => e
-      Rails.logger.error "Erro no authorize_google: #{e.message}"
-      render json: { error: "Erro ao gerar URL de autorização: #{e.message}" }, status: :internal_server_error
-    end
+  unless @library.email_account
+    error_msg = 'Conta de email não configurada.'
+    Rails.logger.error error_msg
+    return render json: { error: error_msg }, status: :unprocessable_entity
   end
 
-  def callback
-    code = params[:code]
+  unless @library.email_account.gmail_user_email.present?
+    error_msg = 'Email do Gmail não configurado.'
+    Rails.logger.error error_msg
+    return render json: { error: error_msg }, status: :unprocessable_entity
+  end
+
+  begin
+    # Use a versão simples que recebe library_id diretamente
+    service = GmailOauthService.new(@library.email_account.gmail_user_email, @library.id)
+    url = service.authorization_url
     
-    unless @library.email_account
-      return render json: { error: 'Conta de email não configurada' }, status: :unprocessable_entity
-    end
-
-    begin
-      service = GmailOauthService.new(@library.email_account.gmail_user_email)
-      credentials = service.fetch_credentials(code)
-
-      if @library.email_account.update(
-        gmail_oauth_token: credentials.access_token,
-        gmail_refresh_token: credentials.refresh_token
-      )
-        render json: { message: 'Conta autorizada com sucesso!' }
-      else
-        render json: { error: @library.email_account.errors.full_messages.join(", ") }, status: :unprocessable_entity
-      end
-    rescue => e
-      Rails.logger.error "Erro no callback: #{e.message}"
-      render json: { error: "Erro ao autorizar conta: #{e.message}" }, status: :internal_server_error
-    end
+    Rails.logger.info "✅ URL de autorização gerada com sucesso"
+    Rails.logger.info "URL: #{url}"
+    
+    render json: { url: url }
+    
+  rescue => e
+    error_msg = "Erro ao gerar URL: #{e.message}"
+    Rails.logger.error "❌ ERRO NO AUTHORIZE_GOOGLE: #{error_msg}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: error_msg }, status: :internal_server_error
   end
+end
+
+def callback
+  code = params[:code]
+  state = params[:state]
+  
+  Rails.logger.info "=== CALLBACK RECEBIDO ==="
+  Rails.logger.info "Params: #{params.inspect}"
+  Rails.logger.info "Library: #{@library.inspect}"
+
+  unless @library.email_account
+    return render json: { error: 'Conta de email não configurada' }, status: :unprocessable_entity
+  end
+
+  begin
+    # Use o método de classe para buscar credenciais
+    credentials = GmailOauthService.fetch_credentials(code, @library.id)
+    
+    Rails.logger.info "✅ Credenciais obtidas com sucesso"
+    Rails.logger.info "Access Token: #{credentials['access_token'] ? 'PRESENTE' : 'AUSENTE'}"
+    Rails.logger.info "Refresh Token: #{credentials['refresh_token'] ? 'PRESENTE' : 'AUSENTE'}"
+
+    if @library.email_account.update(
+      gmail_oauth_token: credentials['access_token'],
+      gmail_refresh_token: credentials['refresh_token'],
+      gmail_token_expires_at: Time.current + credentials['expires_in'].seconds
+    )
+      render json: { message: 'Conta autorizada com sucesso!' }
+    else
+      render json: { error: @library.email_account.errors.full_messages.join(", ") }, status: :unprocessable_entity
+    end
+  rescue => e
+    Rails.logger.error "❌ ERRO NO CALLBACK: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: { error: "Erro ao autorizar conta: #{e.message}" }, status: :internal_server_error
+  end
+end
 
   private
 

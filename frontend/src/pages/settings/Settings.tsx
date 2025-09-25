@@ -134,41 +134,26 @@ export const SettingsPage: React.FC<LibrarySettingsPageProps> = ({
       return;
     }
 
-    console.log('=== INICIANDO handleAuthorizeGmail ===');
-    console.log('libraryId:', libraryId);
-    console.log('token:', token ? 'Token presente' : 'Token ausente');
-    
     try {
+      // Primeiro salve o email se foi alterado
       if (emailAccount.gmail_user_email) {
-        await SettingsService.updateEmailAccount(token, libraryId, emailAccount);
+        await SettingsService.updateEmailAccount(token, libraryId, {
+          gmail_user_email: emailAccount.gmail_user_email
+        });
       }
-      
-      console.log('📤 Solicitando URL de autorização via SettingsService...');
       
       const data = await SettingsService.authorizeGmail(token, libraryId);
       
-      console.log('📋 Dados da resposta:', data);
-      
       if (!data.url) {
-        console.log('❌ URL não encontrada na resposta');
         throw new Error('URL de autorização não encontrada');
       }
       
-      console.log('✅ URL de autorização obtida com sucesso');
-      console.log('🔗 URL:', data.url);
-      
-      const newWindow = window.open(data.url, "_blank");
-      if (!newWindow) {
-        throw new Error('Popup bloqueado. Por favor, permita popups para este site.');
-      }
-      
-      console.log('✅ Nova janela aberta com sucesso');
+      // Redirecione na mesma janela ou abra popup
+      window.location.href = data.url;
       
     } catch (err: any) {
-      console.log('💥 Erro ao gerar link de autorização:', err);
+      console.error('Erro:', err);
       alert(err.message || "Erro ao gerar link de autorização.");
-    } finally {
-      console.log('=== FINALIZANDO handleAuthorizeGmail ===');
     }
   };
 

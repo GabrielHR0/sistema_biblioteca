@@ -15,6 +15,13 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newClient, setNewClient] = useState({
+    fullName: "",
+    email: "",
+    cpf: "",
+    phone: ""
+  });
 
   // -------------------- FETCH CLIENTS --------------------
   const fetchClients = async () => {
@@ -54,6 +61,31 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
     setFilteredClients(filtered);
   }, [searchTerm, clients]);
 
+  // -------------------- CRIAR NOVO MEMBRO --------------------
+  const handleCreateMember = async () => {
+    if (!token) return;
+    
+    // Validação básica
+    if (!newClient.fullName.trim()) {
+      alert("O nome completo é obrigatório");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await createClient(newClient);
+      alert("Membro criado com sucesso!");
+      setShowCreateModal(false);
+      setNewClient({ fullName: "", email: "", cpf: "", phone: "" });
+      await fetchClients(); // Recarrega a lista
+    } catch (err: any) {
+      console.error("Erro ao criar membro:", err);
+      alert(err.message || "Erro ao criar membro");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatCPF = (cpf?: string) =>
     cpf ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4") : "Não informado";
 
@@ -76,11 +108,24 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
         {/* Search + Actions */}
         <div className="card mb-4">
           <div className="card-body">
-            <h5 className="card-title mb-3">
-              <i className="bi bi-search me-2"></i>
-              Pesquisar Membros
-            </h5>
-            <div className="d-flex gap-2 align-items-center">
+            <div className="d-flex justify-content-between align-items-center">
+              <h5 className="card-title mb-0">
+                <i className="bi bi-search me-2"></i>
+                Pesquisar Membros
+              </h5>
+              {isAdmin && (
+                <button
+                  className="btn btn-success"
+                  onClick={() => setShowCreateModal(true)}
+                  disabled={loading}
+                >
+                  <i className="bi bi-person-plus me-2"></i>
+                  Novo Membro
+                </button>
+              )}
+            </div>
+            
+            <div className="d-flex gap-2 align-items-center mt-3">
               <div className="flex-grow-1">
                 <div className="input-group">
                   <span className="input-group-text">
@@ -130,7 +175,7 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
                 <div 
                   className="card h-100 member-card"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => navigate(`/members/${client.id}`)} // <- REDIRECIONA
+                  onClick={() => navigate(`/members/${client.id}`)}
                 >
                   <div className="card-body d-flex flex-column">
                     {/* Header com nome e status */}
@@ -197,6 +242,102 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
           </div>
         )}
       </div>
+
+      {/* Modal para Criar Novo Membro */}
+      {showCreateModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  <i className="bi bi-person-plus me-2"></i>
+                  Novo Membro
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={loading}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Nome Completo *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newClient.fullName}
+                    onChange={(e) => setNewClient({...newClient, fullName: e.target.value})}
+                    disabled={loading}
+                    placeholder="Digite o nome completo"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={newClient.email}
+                    onChange={(e) => setNewClient({...newClient, email: e.target.value})}
+                    disabled={loading}
+                    placeholder="Digite o email"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">CPF</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newClient.cpf}
+                    onChange={(e) => setNewClient({...newClient, cpf: e.target.value})}
+                    disabled={loading}
+                    placeholder="Digite o CPF"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Telefone</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newClient.phone}
+                    onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
+                    disabled={loading}
+                    placeholder="Digite o telefone"
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={loading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleCreateMember}
+                  disabled={loading || !newClient.fullName.trim()}
+                >
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-check-lg me-2"></i>
+                      Criar Membro
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .member-card {

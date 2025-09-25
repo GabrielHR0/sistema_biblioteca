@@ -33,7 +33,7 @@ class BooksController < ApplicationController
   end
 
 
-  # NOVO ENDPOINT: GET /books/:id/copies
+  # GET /books/:id/copies
   def copies
     copies = @book.copies
 

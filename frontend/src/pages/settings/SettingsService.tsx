@@ -187,17 +187,19 @@ export const SettingsService = {
 
   // Google OAuth
   authorizeGmail: async (token: string, libraryId: number) => {
-    console.log('🔍 SettingsService.authorizeGmail chamado');
-    console.log('URL:', `${API_URL}/libraries/${libraryId}/email_account/authorize_google`);
+    console.log('🔍 Solicitando autorização Google...');
     
     const res = await fetch(`${API_URL}/libraries/${libraryId}/email_account/authorize_google`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
     });
     
-    console.log('🔍 Status da resposta:', res.status);
+    console.log('🔍 Status:', res.status);
     return handleResponse(res);
   },
-
+  
   sendGoogleAuthCode: async (token: string, libraryId: number, code: string) => {
     const res = await fetch(`${API_URL}/libraries/${libraryId}/email_account/callback`, {
       method: "POST",
@@ -210,3 +212,4 @@ export const SettingsService = {
     return handleResponse(res);
   },
 };
+

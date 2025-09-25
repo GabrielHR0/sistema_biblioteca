@@ -9,7 +9,7 @@ class LoansController < ApplicationController
     @loans = Loan.includes(:client, :copy).all
     render json: @loans.as_json(
       include: {
-        client: { only: [:id, :fullName, :cpf] },
+        client: { only: [:id, :fullName, :cpf, :phone, :emails] },
         copy: { only: [:id, :number, :status] }
       },
       methods: [:overdue?]
@@ -37,7 +37,6 @@ class LoansController < ApplicationController
       return render json: { error: "Este exemplar não está disponível para empréstimo." }, status: :unprocessable_entity
     end
 
-    # Verifica limite de empréstimos
     active_loans_count = client.loans.where(status: "ongoing").count
     if active_loans_count >= @loan_policy.loan_limit
       return render json: { error: "Cliente atingiu o limite de #{@loan_policy.loan_limit} empréstimos simultâneos." }, status: :unprocessable_entity
@@ -46,8 +45,8 @@ class LoansController < ApplicationController
     @loan = Loan.new(
       client_id: client.id,
       copy_id: copy.id,
-      loan_date: Date.today,
-      due_date: Date.today + @loan_policy.loan_period_days.days,
+      loan_date: Time.zone.today,
+      due_date: Time.zone.today + @loan_policy.loan_period_days.days,
       status: "ongoing",
       renewals_count: 0
     )
@@ -121,12 +120,6 @@ class LoansController < ApplicationController
     end
   end
 
-  def require_staff
-    unless @current_user&.has_access?(:Administrator) || @current_user&.has_access?(:Librarian)
-      render json: { error: "Acesso negado: precisa ser funcionário" }, status: :forbidden
-    end
-  end
-
   def authorize_request
     header = request.headers['Authorization']
     token = header.split(' ').last if header
@@ -137,4 +130,11 @@ class LoansController < ApplicationController
       render json: { errors: 'Token inválido ou expirado' }, status: :unauthorized
     end
   end
+
+  def require_staff
+    unless @current_user&.has_access?(:Administrator) || @current_user&.has_access?(:Librarian)
+      render json: { error: "Acesso negado: precisa ser funcionário" }, status: :forbidden
+    end
+  end
+
 end

@@ -75,7 +75,7 @@ export async function checkClientPassword(token: string, password: string, id: n
 }
 
 export async function apiGetClientById(id: number, token: string): Promise<Client> {
-  const res = await fetch(`/api/clients/${id}`, {
+  const res = await fetch(`${API_URL}/clients/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Erro ao buscar cliente");
@@ -83,7 +83,7 @@ export async function apiGetClientById(id: number, token: string): Promise<Clien
 }
 
 export async function apiGetLoansByClient(id: number, token: string): Promise<Loan[]> {
-  const res = await fetch(`/api/clients/${id}/loans`, {
+  const res = await fetch(`${API_URL}/clients/${id}/loans`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Erro ao buscar empréstimos");

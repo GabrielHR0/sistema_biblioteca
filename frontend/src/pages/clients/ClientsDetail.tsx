@@ -5,6 +5,7 @@ import { useAuth } from "../auth/authContext";
 import { Client } from "./ClientService";
 import { apiGetClientById, apiGetLoansByClient } from "./ClientService";
 import "bootstrap/dist/css/bootstrap.min.css";
+import dayjs from "dayjs";
 
 interface Loan {
   id: number;
@@ -15,8 +16,8 @@ interface Loan {
 }
 
 export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
-    userName,
-    isAdmin,
+  userName,
+  isAdmin,
 }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -33,7 +34,17 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
       const clientData = await apiGetClientById(Number(id), token);
       setClient(clientData);
 
-      const clientLoans = await apiGetLoansByClient(Number(id), token);
+      const clientLoansRaw = await apiGetLoansByClient(Number(id), token);
+
+      // Transformar dados da API para o formato do front-end
+      const clientLoans: Loan[] = clientLoansRaw.map((loan: any) => ({
+        id: loan.id,
+        bookTitle: loan.copy.book.title,
+        dueDate: loan.due_date,
+        returnedAt: loan.status === "returned" ? loan.return_date || null : null,
+        status: loan.status === "ongoing" ? "active" : "returned",
+      }));
+
       setLoans(clientLoans);
     } catch (err: any) {
       console.error("Erro ao carregar detalhes do membro:", err);
@@ -133,7 +144,7 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
                       </h6>
                       <p className="mb-1">
                         <strong>Devolução até:</strong>{" "}
-                        {new Date(loan.dueDate).toLocaleDateString("pt-BR")}
+                        {dayjs(loan.dueDate).format("DD/MM/YYYY")}
                       </p>
                       <span className="badge bg-warning text-dark">
                         <i className="bi bi-hourglass-split me-1"></i>Em andamento
@@ -185,3 +196,4 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
     </BaseLayout>
   );
 };
+

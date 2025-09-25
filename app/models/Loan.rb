@@ -9,6 +9,7 @@ class Loan < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validate :due_date_after_loan_date
   validate :copy_available, on: :create
+  validate :return_date_after_loan_date, if: -> { return_date.present? }
 
   def overdue?
     return false if due_date.blank?
@@ -22,9 +23,12 @@ class Loan < ApplicationRecord
     errors.add(:due_date, "Precisa ser depois da data de empréstimo") if due_date < loan_date
   end
 
+  def return_date_after_loan_date
+    return if return_date.blank? || loan_date.blank?
+    errors.add(:return_date, "Precisa ser depois da data de empréstimo") if return_date < loan_date
+  end
+
   def copy_available
-    if copy.borrowed?
-      errors.add(:copy, "Ja está emprestado")
-    end
+    errors.add(:copy, "Ja está emprestado") if copy.borrowed?
   end
 end

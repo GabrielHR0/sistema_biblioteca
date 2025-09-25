@@ -1,7 +1,7 @@
 class ClientsController < ApplicationController
   before_action :authorize_request
   before_action :require_staff, only: %i[new create edit update destroy]
-  before_action :set_client, only: %i[show update destroy]
+  before_action :set_client, only: %i[show update destroy loans]
 
   # GET /clients
   def index
@@ -22,6 +22,25 @@ class ClientsController < ApplicationController
   # GET /clients/:id
   def show
     render json: @client
+  end
+
+  #GET /clients/:id/loans
+  def loans
+    loans = @client.loans.includes(copy: :book)
+
+    render json: loans.as_json(
+      include: {
+        copy: {
+          include: {
+            book: {
+              only: [:id, :title, :author, :description]
+            }
+          },
+          only: [:id, :edition, :status, :number, :book_id]
+        }
+      },
+      except: [:created_at, :updated_at]
+    )
   end
 
   # POST /clients
@@ -55,6 +74,7 @@ class ClientsController < ApplicationController
     @client = Client.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Cliente não encontrado." }, status: :not_found
+    return
   end
 
   def client_params
