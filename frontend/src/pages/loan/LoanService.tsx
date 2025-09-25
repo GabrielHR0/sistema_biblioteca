@@ -139,8 +139,10 @@ export const LoanService = {
   },
 
   async createClient(token: string, clientData: {
-    name: string;
+    fullName: string;
     email: string;
+    cpf: string;
+    phone: string;
   }): Promise<any> {
     const response = await fetch(`${API_URL}/clients`, {
       method: "POST",

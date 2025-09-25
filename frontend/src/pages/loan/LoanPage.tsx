@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BaseLayout } from "@layouts/BaseLayout";
 import { LoanService } from "./LoanService";
-import { LoanModal } from "@components/public/LoanModal";
+import { LoanModal } from "@components/public/loanModal/LoanModal";
 import { useAuth } from "../auth/authContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -392,8 +392,8 @@ export const LoanPage: React.FC<LibraryProps> = ({ userName, isAdmin }) => {
                       >
                         {getAvailableCopies(book) > 0 ? (
                           <>
-                            <i className="bi bi-cart-check me-2"></i>
-                            Realizar Empréstimo
+                            <i className="bi me-2"></i>
+                            Empréstimos
                           </>
                         ) : (
                           <>
