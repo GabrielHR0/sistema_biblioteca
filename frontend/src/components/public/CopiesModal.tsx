@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 
 export interface Loan {
   id?: number;
@@ -64,35 +65,42 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
 
     // Filtro por número
     if (searchNumber) {
-      filtered = filtered.filter(copy =>
-        copy.number?.toString().includes(searchNumber)
-      );
+      filtered = filtered.filter((copy) => copy.number?.toString().includes(searchNumber));
     }
 
     // Filtro por edição
     if (searchEdition) {
-      filtered = filtered.filter(copy =>
+      filtered = filtered.filter((copy) =>
         copy.edition.toLowerCase().includes(searchEdition.toLowerCase())
       );
     }
 
     // Filtro por status
     if (searchStatus !== "all") {
-      filtered = filtered.filter(copy => copy.status === searchStatus);
+      filtered = filtered.filter((copy) => copy.status === searchStatus);
     }
 
     setFilteredCopies(filtered);
   };
 
+  // Badges maiores (pill) para status do exemplar
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       available: { class: "bg-success", text: "Disponível" },
-      borrowed: { class: "bg-warning", text: "Emprestado" },
-      lost: { class: "bg-danger", text: "Perdido" }
+      borrowed: { class: "bg-warning text-dark", text: "Emprestado" },
+      lost: { class: "bg-danger", text: "Perdido" },
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.available;
-    return <span className={`badge ${config.class}`}>{config.text}</span>;
+
+    return (
+      <span
+        className={`badge rounded-pill ${config.class} text-nowrap`}
+        style={{ fontSize: "0.9rem", padding: "0.45rem 0.6rem" }}
+      >
+        {config.text}
+      </span>
+    );
   };
 
   const getStatusOptions = () => {
@@ -100,42 +108,91 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
       { value: "all", label: "Todos os status" },
       { value: "available", label: "Disponível" },
       { value: "borrowed", label: "Emprestado" },
-      { value: "lost", label: "Perdido" }
+      { value: "lost", label: "Perdido" },
     ];
   };
 
   const getEditStatusOptions = () => {
     return [
       { value: "available", label: "Disponível" },
-      { value: "lost", label: "Perdido" }
+      { value: "lost", label: "Perdido" },
     ];
   };
 
   const getCurrentLoan = (copy: BookCopy): Loan | null => {
-    if (copy.status !== 'borrowed' || !copy.loans || copy.loans.length === 0) {
+    if (copy.status !== "borrowed" || !copy.loans || copy.loans.length === 0) {
       return null;
     }
-    
-    return copy.loans.find(loan => loan.status === 'ongoing' || !loan.return_date) || null;
+
+    return (
+      copy.loans.find((loan) => loan.status === "ongoing" || !loan.return_date) || null
+    );
   };
 
+  // Agora usando isBefore com granularidade 'day'
   const getLoanInfo = (copy: BookCopy) => {
     const currentLoan = getCurrentLoan(copy);
     if (!currentLoan) return null;
 
-    const dueDate = new Date(currentLoan.due_date);
-    const isOverdue = dueDate < new Date();
+    const dueDate = dayjs(currentLoan.due_date);
+    const isOverdue = dueDate.isBefore(dayjs(), "day"); // vencido se data < hoje (por dia)
+
     const renewalCount = currentLoan.renewals_count || 0;
 
     return {
-      dueDate: dueDate.toLocaleDateString('pt-BR'),
+      dueDate: dueDate.format("DD/MM/YYYY"),
       isOverdue,
       renewalCount,
-      loanDate: new Date(currentLoan.loan_date).toLocaleDateString('pt-BR'),
+      loanDate: dayjs(currentLoan.loan_date).format("DD/MM/YYYY"),
       clientId: currentLoan.client_id,
       userId: currentLoan.user_id,
-      loanStatus: currentLoan.status
+      loanStatus: currentLoan.status, 
     };
+  };
+
+
+  const renderLoanStatusBadge = (loanInfo: ReturnType<typeof getLoanInfo>) => {
+    if (!loanInfo) return <span className="text-muted">-</span>;
+
+    const overdue = loanInfo.isOverdue || loanInfo.loanStatus === "overdue";
+    const label = overdue
+      ? "Atrasado"
+      : loanInfo.loanStatus === "ongoing"
+      ? "Ativo"
+      : loanInfo.loanStatus === "returned"
+      ? "Devolvido"
+      : loanInfo.loanStatus;
+
+    const badgeClass = overdue
+      ? "bg-danger"
+      : loanInfo.loanStatus === "ongoing"
+      ? "bg-warning text-dark"
+      : "bg-secondary";
+
+    return (
+      <span
+        className={`badge rounded-pill ${badgeClass} text-nowrap`}
+        style={{ fontSize: "0.9rem", padding: "0.45rem 0." }}
+        title={overdue ? "Atrasado" : label}
+      >
+        {overdue && (
+          <span
+            className="me-2-centered"
+            style={{
+              display: "inline-flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: "#dc3545",
+              verticalAlign: "middle",
+            }}
+          />
+        )}
+        {label}
+      </span>
+    );
   };
 
   const handleEdit = (copy: BookCopy) => {
@@ -146,12 +203,12 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
 
   const handleSaveEdit = async () => {
     if (!editingCopy || !onUpdateCopy) return;
-    
+
     setLoading(true);
     try {
       await onUpdateCopy(editingCopy.id!, {
         edition: editEdition,
-        status: editStatus
+        status: editStatus,
       });
       setEditingCopy(null);
     } catch (err) {
@@ -170,29 +227,30 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
 
   const handleDeleteCopy = async (copyId: number) => {
     if (!onDeleteCopy) return;
-    
-    const copyToDelete = copies.find(copy => copy.id === copyId);
-    if (!copyToDelete) return;
-    
 
-    if (copyToDelete.status === 'borrowed') {
+    const copyToDelete = copies.find((copy) => copy.id === copyId);
+    if (!copyToDelete) return;
+
+    if (copyToDelete.status === "borrowed") {
       alert("Não é possível excluir um exemplar que está emprestado!");
       return;
     }
 
-    if (copyToDelete.status === 'lost') {
+    if (copyToDelete.status === "lost") {
       const confirmDelete = window.confirm(
         "Este exemplar está marcado como PERDIDO. Tem certeza que deseja excluí-lo?"
       );
       if (!confirmDelete) return;
     }
-    
-    if (!window.confirm(
-      `Tem certeza que deseja excluir o exemplar #${copyToDelete.number} (${copyToDelete.edition})?\n\nEsta ação não pode ser desfeita.`
-    )) {
+
+    if (
+      !window.confirm(
+        `Tem certeza que deseja excluir o exemplar #${copyToDelete.number} (${copyToDelete.edition})?\n\nEsta ação não pode ser desfeita.`
+      )
+    ) {
       return;
     }
-    
+
     setLoading(true);
     try {
       await onDeleteCopy(copyId);
@@ -205,14 +263,14 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
   };
 
   const canDeleteCopy = (copy: BookCopy) => {
-    return copy.status !== 'borrowed';
+    return copy.status !== "borrowed";
   };
 
   const getDeleteButtonTitle = (copy: BookCopy) => {
-    if (copy.status === 'borrowed') {
+    if (copy.status === "borrowed") {
       return "Não é possível excluir exemplar emprestado";
     }
-    if (copy.status === 'lost') {
+    if (copy.status === "lost") {
       return "Excluir exemplar perdido";
     }
     return "Excluir exemplar";
@@ -220,7 +278,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
 
   const canEditStatus = (copy: BookCopy) => {
     // Só permite editar status se não estiver emprestado
-    return copy.status !== 'borrowed';
+    return copy.status !== "borrowed";
   };
 
   return (
@@ -249,7 +307,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                 <div className="card text-center">
                   <div className="card-body">
                     <h5 className="card-title text-success">
-                      {copies.filter(c => c.status === 'available').length}
+                      {copies.filter((c) => c.status === "available").length}
                     </h5>
                     <p className="card-text">Disponíveis</p>
                   </div>
@@ -259,7 +317,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                 <div className="card text-center">
                   <div className="card-body">
                     <h5 className="card-title text-warning">
-                      {copies.filter(c => c.status === 'borrowed').length}
+                      {copies.filter((c) => c.status === "borrowed").length}
                     </h5>
                     <p className="card-text">Emprestados</p>
                   </div>
@@ -269,7 +327,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                 <div className="card text-center">
                   <div className="card-body">
                     <h5 className="card-title text-danger">
-                      {copies.filter(c => c.status === 'lost').length}
+                      {copies.filter((c) => c.status === "lost").length}
                     </h5>
                     <p className="card-text">Perdidos</p>
                   </div>
@@ -293,7 +351,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                   disabled={loading}
                 />
               </div>
-              
+
               <div className="col-md-4">
                 <label htmlFor="searchEdition" className="form-label small fw-bold">
                   Edição
@@ -308,7 +366,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                   disabled={loading}
                 />
               </div>
-              
+
               <div className="col-md-3">
                 <label htmlFor="searchStatus" className="form-label small fw-bold">
                   Status
@@ -320,14 +378,14 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                   onChange={(e) => setSearchStatus(e.target.value)}
                   disabled={loading}
                 >
-                  {getStatusOptions().map(option => (
+                  {getStatusOptions().map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
               </div>
-              
+
               <div className="col-md-2 d-flex align-items-end">
                 <button
                   className="btn btn-outline-secondary w-100"
@@ -370,21 +428,22 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                   {filteredCopies.length === 0 ? (
                     <tr>
                       <td colSpan={(onUpdateCopy || onDeleteCopy) ? 8 : 7} className="text-center py-4">
-                        {copies.length === 0 ? "Nenhum exemplar cadastrado" : "Nenhum exemplar encontrado com os filtros aplicados"}
+                        {copies.length === 0
+                          ? "Nenhum exemplar cadastrado"
+                          : "Nenhum exemplar encontrado com os filtros aplicados"}
                       </td>
                     </tr>
                   ) : (
                     filteredCopies.map((copy) => {
                       const loanInfo = getLoanInfo(copy);
-                      
+
                       return (
-                        <tr key={copy.id} className={loanInfo?.isOverdue ? 'table-danger' : ''}>
+                        <tr key={copy.id} className={loanInfo?.isOverdue ? "table-danger" : ""}>
                           <td>
-                            
                             <strong>#{copy.number}</strong>
                             <br />
                           </td>
-                          
+
                           {editingCopy?.id === copy.id ? (
                             <>
                               <td>
@@ -397,42 +456,42 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                                 />
                               </td>
                               <td>
-                                <select
-                                  className="form-select form-select-sm"
-                                  value={editStatus}
-                                  onChange={(e) => setEditStatus(e.target.value as "available" | "borrowed" | "lost")}
-                                  disabled={loading || !canEditStatus(copy)}
-                                >
-                                  {getEditStatusOptions().map(option => (
-                                    <option key={option.value} value={option.value}>
-                                      {option.label}
-                                    </option>
-                                  ))}
-                                </select>
-                                {!canEditStatus(copy) && (
-                                  <small className="text-muted">Status automático (emprestado)</small>
-                                )}
+                                {/* badge maior */}
+                                {getStatusBadge(editStatus)}
+                                <div className="mt-2">
+                                  <select
+                                    className="form-select form-select-sm"
+                                    value={editStatus}
+                                    onChange={(e) =>
+                                      setEditStatus(
+                                        e.target.value as "available" | "borrowed" | "lost"
+                                      )
+                                    }
+                                    disabled={loading || !canEditStatus(copy)}
+                                  >
+                                    {getEditStatusOptions().map((option) => (
+                                      <option key={option.value} value={option.value}>
+                                        {option.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {!canEditStatus(copy) && (
+                                    <small className="text-muted">Status automático (emprestado)</small>
+                                  )}
+                                </div>
                               </td>
-                              <td>
-                                {loanInfo ? loanInfo.loanDate : '-'}
-                              </td>
+                              <td>{loanInfo ? loanInfo.loanDate : "-"}</td>
                               <td>
                                 {loanInfo ? (
-                                  <span className={loanInfo.isOverdue ? 'text-danger fw-bold' : ''}>
+                                  <span className={loanInfo.isOverdue ? "text-danger fw-bold" : ""}>
                                     {loanInfo.dueDate}
                                   </span>
-                                ) : '-'}
+                                ) : (
+                                  "-"
+                                )}
                               </td>
-                              <td>
-                                {loanInfo ? loanInfo.renewalCount : '-'}
-                              </td>
-                              <td>
-                                {loanInfo ? (
-                                  <span className={`badge ${loanInfo.loanStatus === 'ongoing' ? 'bg-warning' : 'bg-secondary'}`}>
-                                    {loanInfo.loanStatus === 'ongoing' ? 'Ativo' : loanInfo.loanStatus}
-                                  </span>
-                                ) : '-'}
-                              </td>
+                              <td>{loanInfo ? loanInfo.renewalCount : "-"}</td>
+                              <td>{loanInfo ? renderLoanStatusBadge(loanInfo) : "-"}</td>
                               <td>
                                 <div className="d-flex gap-1">
                                   <button
@@ -458,18 +517,13 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                             <>
                               <td>{copy.edition}</td>
                               <td>{getStatusBadge(copy.status)}</td>
-                              <td>
-                                {loanInfo ? loanInfo.loanDate : '-'}
-                              </td>
+                              <td>{loanInfo ? loanInfo.loanDate : "-"}</td>
                               <td>
                                 {loanInfo ? (
                                   <div>
-                                    <span className={loanInfo.isOverdue ? 'text-danger fw-bold' : ''}>
+                                    <span className={loanInfo.isOverdue ? "text-danger fw-bold" : ""}>
                                       {loanInfo.dueDate}
                                     </span>
-                                    {loanInfo.isOverdue && (
-                                      <small className="text-danger d-block">Atrasado</small>
-                                    )}
                                   </div>
                                 ) : (
                                   <span className="text-muted">-</span>
@@ -477,8 +531,8 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                               </td>
                               <td>
                                 {loanInfo ? (
-                                  <span className={loanInfo.renewalCount > 0 ? 'text-info fw-bold' : ''}>
-                                    {loanInfo.renewalCount} 
+                                  <span className={loanInfo.renewalCount > 0 ? "text-info fw-bold" : ""}>
+                                    {loanInfo.renewalCount}
                                   </span>
                                 ) : (
                                   <span className="text-muted">-</span>
@@ -486,9 +540,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                               </td>
                               <td>
                                 {loanInfo ? (
-                                  <span className={`badge ${loanInfo.loanStatus === 'ongoing' ? 'bg-warning' : 'bg-secondary'}`}>
-                                    {loanInfo.loanStatus === 'ongoing' ? 'Ativo' : loanInfo.loanStatus}
-                                  </span>
+                                  renderLoanStatusBadge(loanInfo)
                                 ) : (
                                   <span className="text-muted">-</span>
                                 )}
@@ -510,7 +562,7 @@ export const CopiesModal: React.FC<CopiesModalProps> = ({
                                     {onDeleteCopy && (
                                       <button
                                         className={`btn btn-sm ${
-                                          canDeleteCopy(copy) ? 'btn-danger' : 'btn-outline-danger'
+                                          canDeleteCopy(copy) ? "btn-danger" : "btn-outline-danger"
                                         }`}
                                         onClick={() => handleDeleteCopy(copy.id!)}
                                         disabled={loading || !canDeleteCopy(copy)}

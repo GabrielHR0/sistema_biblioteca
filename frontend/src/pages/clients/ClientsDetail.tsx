@@ -12,7 +12,8 @@ interface Loan {
   bookTitle: string;
   dueDate: string;
   returnedAt?: string | null;
-  status: "active" | "returned";
+  status: "active" | "returned" | "overdue";
+  daysOverdue?: number;
 }
 
 export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
@@ -27,6 +28,25 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const calculateLoanStatus = (dueDate: string, returnedAt?: string | null): "active" | "returned" | "overdue" => {
+    if (returnedAt) return "returned";
+    
+    const today = dayjs();
+    const due = dayjs(dueDate);
+    
+    if (today.isAfter(due, 'day')) {
+      return "overdue";
+    }
+    
+    return "active";
+  };
+
+  const calculateDaysOverdue = (dueDate: string): number => {
+    const today = dayjs();
+    const due = dayjs(dueDate);
+    return Math.max(0, today.diff(due, 'day'));
+  };
+
   const fetchData = async () => {
     if (!token || !id) return;
     setLoading(true);
@@ -37,13 +57,18 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
       const clientLoansRaw = await apiGetLoansByClient(Number(id), token);
 
       // Transformar dados da API para o formato do front-end
-      const clientLoans: Loan[] = clientLoansRaw.map((loan: any) => ({
-        id: loan.id,
-        bookTitle: loan.copy.book.title,
-        dueDate: loan.due_date,
-        returnedAt: loan.status === "returned" ? loan.return_date || null : null,
-        status: loan.status === "ongoing" ? "active" : "returned",
-      }));
+      const clientLoans: Loan[] = clientLoansRaw.map((loan: any) => {
+        const status = calculateLoanStatus(loan.due_date, loan.status === "returned" ? loan.return_date || null : null);
+        
+        return {
+          id: loan.id,
+          bookTitle: loan.copy.book.title,
+          dueDate: loan.due_date,
+          returnedAt: loan.status === "returned" ? loan.return_date || null : null,
+          status: status,
+          daysOverdue: status === "overdue" ? calculateDaysOverdue(loan.due_date) : undefined,
+        };
+      });
 
       setLoans(clientLoans);
     } catch (err: any) {
@@ -82,6 +107,7 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
     );
   }
 
+  const overdueLoans = loans.filter((l) => l.status === "overdue");
   const activeLoans = loans.filter((l) => l.status === "active");
   const pastLoans = loans.filter((l) => l.status === "returned");
 
@@ -127,6 +153,64 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
           </div>
         </div>
 
+        {/* Empréstimos Atrasados - DESTAQUE */}
+        {overdueLoans.length > 0 && (
+          <div className="mb-4">
+            <div className="d-flex align-items-center mb-3">
+              <h4 className="mb-0 text-danger">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>Empréstimos Atrasados
+              </h4>
+              <span className="badge bg-danger ms-2 fs-6">{overdueLoans.length}</span>
+            </div>
+            
+            <div className="alert alert-danger border-danger">
+              <div className="d-flex align-items-center">
+                <i className="bi bi-exclamation-octagon-fill me-2 fs-5"></i>
+                <strong>Atenção: {overdueLoans.length} empréstimo(s) em atraso</strong>
+              </div>
+            </div>
+
+            <div className="row g-3">
+              {overdueLoans.map((loan) => (
+                <div key={loan.id} className="col-md-6 col-lg-4">
+                  <div className="card border-danger shadow-lg h-100">
+                    <div className="card-header bg-danger text-white">
+                      <h6 className="mb-0">
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        ATRASADO
+                      </h6>
+                    </div>
+                    <div className="card-body">
+                      <h6 className="card-title text-danger">
+                        <i className="bi bi-book me-2"></i>
+                        {loan.bookTitle}
+                      </h6>
+                      <div className="mb-2">
+                        <strong>Data de vencimento:</strong>
+                        <p className="mb-1 text-danger fw-bold">
+                          {dayjs(loan.dueDate).format("DD/MM/YYYY")}
+                        </p>
+                      </div>
+                      <div className="mb-2">
+                        <strong>Dias em atraso:</strong>
+                        <p className="mb-1 text-danger fw-bold">
+                          {loan.daysOverdue} {loan.daysOverdue === 1 ? 'dia' : 'dias'}
+                        </p>
+                      </div>
+                      <div className="alert alert-danger py-1 mb-0">
+                        <small>
+                          <i className="bi bi-info-circle me-1"></i>
+                          Entre em contato com o membro
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Empréstimos Ativos */}
         <div className="mb-4">
           <h4 className="mb-3">
@@ -168,7 +252,7 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
             <div className="row g-3">
               {pastLoans.map((loan) => (
                 <div key={loan.id} className="col-md-6 col-lg-4">
-                  <div className="card shadow-sm h-100">
+                  <div className="card border-secondary shadow-sm h-100">
                     <div className="card-body">
                       <h6 className="card-title">
                         <i className="bi bi-book me-2 text-secondary"></i>
@@ -177,7 +261,7 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
                       <p className="mb-1">
                         <strong>Devolvido em:</strong>{" "}
                         {loan.returnedAt
-                          ? new Date(loan.returnedAt).toLocaleDateString("pt-BR")
+                          ? dayjs(loan.returnedAt).format("DD/MM/YYYY")
                           : "Data não registrada"}
                       </p>
                       <span className="badge bg-success">
@@ -196,4 +280,3 @@ export const MemberDetailsPage: React.FC<{ userName: string; isAdmin: boolean }>
     </BaseLayout>
   );
 };
-

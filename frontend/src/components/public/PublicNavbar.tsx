@@ -1,64 +1,62 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@pages/auth/authContext"; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useAuth } from "@pages/auth/authContext";
 
-interface PublicNavbarProps {
-  userName: string | null;
-}
+export const PublicNavbar: React.FC<{ userName?: string }> = ({ userName }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-export const PublicNavbar: React.FC<PublicNavbarProps> = (userName) => {
-  const { user, logout } = useAuth();
-  const token = localStorage.getItem("token");
+  const currentPath = location.pathname;
+
+  const mainItems = [
+    { title: "Dashboard", url: "/dashboard", icon: "bi-house" },
+    { title: "Livros", url: "/livros", icon: "bi-journal-bookmark" },
+    { title: "Empréstimos", url: "/emprestimos", icon: "bi-book" },
+    { title: "Membros", url: "/membros", icon: "bi-people" },
+  ];
+
+  const isActive = (url: string) => currentPath === url;
 
   const handleLogout = () => {
-    logout();
-    window.location.href = "/login";
+    logout(); 
+    navigate("/login"); 
   };
 
   return (
-    <Navbar bg="light" expand="lg" className="shadow-sm mb-4">
-      <Container fluid>
-        <Navbar.Brand as={NavLink} to="/home" className="d-flex align-items-center">
-          <i className="bi bi-journal-bookmark-fill me-2" style={{ fontSize: "1.5rem" }}></i>
-          Biblioteca Ney Pontes
-        </Navbar.Brand>
+    <div className="d-flex flex-column bg-light" style={{ width: "250px", height: "100vh", position: "fixed" }}>
+      <div className="d-flex align-items-center p-3 border-bottom">
+        <i className="bi bi-person-circle fs-3 me-2"></i>
+        <span className="fw-bold">{userName || "Usuário"}</span>
+      </div>
 
-        <Navbar.Toggle aria-controls="navbarNav" />
-        <Navbar.Collapse id="navbarNav">
-          <Nav className="me-auto">
-            <Nav.Link as={NavLink} to="/livros">
-              Livros
-            </Nav.Link>
-            <Nav.Link as={NavLink} to="/emprestimos">
-              Empréstimos
-            </Nav.Link>
-          </Nav>
+      <div className="flex-grow-1 overflow-auto">
+        <div className="mt-3">
+          <h6 className="text-muted px-3">Principal</h6>
+          <ul className="nav flex-column">
+            {mainItems.map((item) => (
+              <li key={item.title} className="nav-item">
+                <NavLink
+                  to={item.url}
+                  className={`nav-link d-flex align-items-center px-3 py-2 ${isActive(item.url) ? "active fw-bold bg-primary text-white" : "text-dark"}`}
+                >
+                  <i className={`${item.icon} me-2`}></i>
+                  {item.title}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
-          <Nav>
-            <NavDropdown
-              title={
-                <span className="d-flex align-items-center">
-                  <i className="bi bi-person-circle me-2" style={{ fontSize: "1.5rem" }}></i>
-                  {user?.name || "Usuário"}
-                </span>
-              }
-              id="userDropdown"
-              align="end"
-            >
-              <NavDropdown.Item as={NavLink} to={`/password-reset/${token}`}>
-                Alterar senha
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={handleLogout} className="text-danger">
-                Sair
-              </NavDropdown.Item>
-            </NavDropdown>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+      {/* Rodapé com logout */}
+      <div className="p-3 border-top">
+        <button onClick={handleLogout} className="btn btn-outline-danger w-100">
+          <i className="bi bi-box-arrow-right me-2"></i>Sair
+        </button>
+      </div>
+    </div>
   );
 };

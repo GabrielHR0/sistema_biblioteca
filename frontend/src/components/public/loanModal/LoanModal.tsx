@@ -1,4 +1,4 @@
-// components/LoanModal.tsx
+// components/public/loanModal/LoanModal.tsx
 import React, { useState, useEffect } from "react";
 import { LoanService } from "@pages/loan/LoanService";
 import { checkClientPassword, createClient } from "@pages/clients/ClientService";
@@ -51,6 +51,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
   const [detailedLoanInfo, setDetailedLoanInfo] = useState<any>(null);
   const [actionType, setActionType] = useState<"loan" | "return">("loan");
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCopies = async () => {
@@ -58,10 +59,12 @@ export const LoanModal: React.FC<LoanModalProps> = ({
       
       try {
         setLoading(true);
+        console.log('📚 Buscando cópias do livro ID:', book.id);
         const copiesData = await LoanService.getBookCopies(token, book.id);
+        console.log('✅ Cópias carregadas no LoanModal:', copiesData);
         setCopies(copiesData);
       } catch (err: any) {
-        console.error("Erro ao buscar cópias:", err);
+        console.error("❌ Erro ao buscar cópias:", err);
         setError(err.message || "Erro ao buscar cópias do livro");
       } finally {
         setLoading(false);
@@ -80,7 +83,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
       const clientsData = await LoanService.searchClients(token, clientSearch);
       setClients(clientsData);
     } catch (err: any) {
-      console.error("Erro ao buscar clientes:", err);
+      console.error("❌ Erro ao buscar clientes:", err);
       setError(err.message || "Erro ao buscar clientes");
     } finally {
       setLoading(false);
@@ -91,21 +94,28 @@ export const LoanModal: React.FC<LoanModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Adiciona uma senha padrão para novos clientes
-      const clientWithPassword = {
-        ...clientData,
-        password: "123456" // Senha padrão para novos clientes
-      };
+      const response = await createClient({
+          fullName: clientData.fullName,
+          email: clientData.email,
+          cpf: clientData.cpf,
+          phone: clientData.phone,
+      });
+      
+      const newClient = response.client;
+      const password = response.generated_password;
 
-      const newClient = await createClient(clientWithPassword);
+      console.log('✅ Cliente criado:', newClient);
       
       setSelectedClient(newClient);
       setClients([newClient]);
+      setGeneratedPassword(password);
       setError(null);
+      
+      alert(`Cliente criado com sucesso! Senha gerada: ${password}\n\nEsta senha foi enviada por email para o cliente.`);
       
       return newClient;
     } catch (err: any) {
-      console.error("Erro ao criar cliente:", err);
+      console.error("❌ Erro ao criar cliente:", err);
       setError(err.message || "Erro ao criar cliente");
       throw err;
     } finally {
@@ -114,7 +124,9 @@ export const LoanModal: React.FC<LoanModalProps> = ({
   };
 
   const handleConfirmLoan = async () => {
-    if (!selectedClient || !selectedCopy || !password) {
+    const currentPassword = generatedPassword || password;
+    
+    if (!selectedClient || !selectedCopy || !currentPassword) {
       setError("Preencha todos os campos obrigatórios!");
       return;
     }
@@ -122,8 +134,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      // Verifica a senha do cliente usando o ID do cliente salvo
-      const passwordCheck = await checkClientPassword(token, password, selectedClient.id);
+      const passwordCheck = await checkClientPassword(token, currentPassword, selectedClient.id);
       
       if (!passwordCheck.valid) {
         throw new Error("Senha do cliente incorreta");
@@ -138,7 +149,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error("Erro ao realizar empréstimo:", err);
+      console.error("❌ Erro ao realizar empréstimo:", err);
       setError(err.message || "Erro ao realizar empréstimo");
     } finally {
       setLoading(false);
@@ -168,7 +179,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error("Erro ao confirmar devolução:", err);
+      console.error("❌ Erro ao confirmar devolução:", err);
       setError(err.message || "Erro ao confirmar devolução");
     } finally {
       setLoading(false);
@@ -176,43 +187,95 @@ export const LoanModal: React.FC<LoanModalProps> = ({
   };
 
   const loadLoanDetails = async (copy: BookCopy) => {
-    if (copy.status !== 'borrowed' || !copy.loans || copy.loans.length === 0) {
+    console.log('🔄 loadLoanDetails chamada no LoanModal com cópia:', {
+      id: copy.id,
+      status: copy.status,
+      loansCount: copy.loans?.length || 0,
+      loans: copy.loans
+    });
+    
+    if (copy.status !== 'borrowed') {
+      console.log('❌ Cópia não está com status "borrowed":', copy.status);
       return null;
     }
     
-    const activeLoan = copy.loans.find((loan: any) => 
-      loan.status === 'ongoing' || !loan.return_date
-    );
+    if (!copy.loans || !Array.isArray(copy.loans) || copy.loans.length === 0) {
+      console.log('❌ Cópia não tem array de empréstimos válido no LoanModal');
+      return null;
+    }
 
-    if (!activeLoan || !activeLoan.id) return null;
+    const activeLoan = copy.loans.find((loan: any) => {
+      const isActive = loan.status === 'ongoing' || 
+                      !loan.return_date || 
+                      loan.return_date === null ||
+                      loan.return_date === 'null';
+      console.log('🔍 Verificando loan no LoanModal:', { 
+        id: loan.id, 
+        status: loan.status, 
+        return_date: loan.return_date,
+        isActive 
+      });
+      return isActive;
+    });
+
+    console.log('🎯 Active loan encontrado no LoanModal:', activeLoan);
+
+    if (!activeLoan) {
+      console.log('❌ Nenhum empréstimo ativo encontrado no LoanModal');
+      return null;
+    }
+
+    if (!activeLoan.id) {
+      console.log('❌ Empréstimo ativo não tem ID no LoanModal:', activeLoan);
+      return null;
+    }
 
     setLoadingLoanDetails(true);
     try {
+      console.log('📡 Chamando LoanService.getLoan para ID:', activeLoan.id);
       const loanDetails = await LoanService.getLoan(token, activeLoan.id);
+      console.log('✅ Detalhes do empréstimo carregados no LoanModal:', loanDetails);
       setDetailedLoanInfo(loanDetails);
       return loanDetails;
     } catch (err: any) {
-      console.error("Erro ao carregar detalhes do empréstimo:", err);
+      console.error('❌ Erro ao carregar detalhes do empréstimo no LoanModal:', err);
       setError("Erro ao carregar informações do empréstimo");
-      return null;
+      throw err;
     } finally {
       setLoadingLoanDetails(false);
     }
   };
 
   const handleCopySelection = async (copy: BookCopy) => {
+    console.log('🎯 handleCopySelection no LoanModal com cópia:', {
+      id: copy.id,
+      number: copy.number,
+      edition: copy.edition,
+      status: copy.status
+    });
+    
     setSelectedCopy(copy);
+    setError(null);
     
     if (copy.status === 'available') {
       setActionType('loan');
+      console.log('📖 Indo para etapa 1 (seleção de cliente)');
       setStep(1);
     } else if (copy.status === 'borrowed') {
       setActionType('return');
-      setLoadingLoanDetails(true);
       try {
-        await loadLoanDetails(copy);
-        setStep(2);
+        const loanDetails = await loadLoanDetails(copy);
+        console.log('📋 Loan details retornado no LoanModal:', loanDetails);
+        
+        if (loanDetails) {
+          console.log('✅ Indo para etapa 2 (confirmação de devolução)');
+          setStep(2);
+        } else {
+          console.log('❌ Loan details é null, mostrando erro');
+          setError("Não foi possível carregar os detalhes do empréstimo");
+        }
       } catch (error) {
+        console.error('❌ Erro em handleCopySelection no LoanModal:', error);
         setError("Erro ao carregar detalhes do empréstimo");
       }
     }
@@ -232,11 +295,21 @@ export const LoanModal: React.FC<LoanModalProps> = ({
     setSelectedClient(null);
     setClients([]);
     setClientSearch("");
-    setPassword(""); // Limpa a senha também
+    setPassword("");
+    setGeneratedPassword(null);
   };
 
   const availableCopies = copies.filter(copy => copy.status === "available");
   const borrowedCopies = copies.filter(copy => copy.status === "borrowed");
+
+  console.log('📊 Estado atual do LoanModal:', {
+    step,
+    actionType,
+    selectedCopy: selectedCopy?.id,
+    selectedClient: selectedClient?.id,
+    availableCopies: availableCopies.length,
+    borrowedCopies: borrowedCopies.length
+  });
 
   const renderStep = () => {
     switch (step) {
@@ -283,6 +356,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({
             loading={loading}
             loadingLoanDetails={loadingLoanDetails}
             actionType={actionType}
+            generatedPassword={generatedPassword}
             onConfirm={actionType === 'loan' ? handleConfirmLoan : handleConfirmReturn}
             onBack={prevStep}
           />

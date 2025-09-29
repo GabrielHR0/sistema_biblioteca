@@ -11,18 +11,21 @@ interface BaseLayoutProps {
 export const BaseLayout: React.FC<BaseLayoutProps> = ({ children, userName, isAdmin }) => {
   return (
     <div className="d-flex">
-      {isAdmin && <AdminNavbar userName={userName} />}
+      {/* Ambas as navbars como sidebars fixas */}
+      {isAdmin ? (
+        <AdminNavbar userName={userName} />
+      ) : (
+        <PublicNavbar userName={userName} />
+      )}
       
       <div className="flex-grow-1" style={{ 
-        marginLeft: isAdmin ? "250px" : "0",
+        marginLeft: "250px", // Ambas as navbars têm 250px
         minHeight: "100vh",
-        transition: "margin-left 0.3s ease"
+        transition: "margin-left 0.3s ease",
+        backgroundColor: "#f8f9fa"
       }}>
-        {!isAdmin && <PublicNavbar userName={userName} />}
-        
         <main className="p-3 p-md-4" style={{
-          minHeight: isAdmin ? "100vh" : "calc(100vh - 80px)",
-          backgroundColor: "#f8f9fa"
+          minHeight: "100vh"
         }}>
           <div className="container-fluid">
             <div className="row">
@@ -39,4 +42,4 @@ export const BaseLayout: React.FC<BaseLayoutProps> = ({ children, userName, isAd
       </div>
     </div>
   );
-};
+}; 

@@ -20,7 +20,6 @@ export const AdminNavbar: React.FC<{ userName?: string }> = ({ userName }) => {
 
   const managementItems = [
     { title: "Bibliotecários", url: "/usuarios", icon: "bi-person-check" },
-    { title: "Reservas", url: "/reservas", icon: "bi-calendar" },
     { title: "Relatórios", url: "/relatorios", icon: "bi-bar-chart" },
     { title: "Configurações", url: "/configuracoes", icon: "bi-gear" },
   ];

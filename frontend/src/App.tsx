@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import { Login } from "@pages/auth/login";
 import { ForgotPassword } from "@pages/auth/forgotPassword";
 import { ResetPassword } from "@pages/auth/resetPassword";
-import { AdminDashboard } from "@pages/dashboard/AdminDashboard";
 import { AdminUsers } from "@pages/users/AdminUsers";
 import { Books } from "@pages/books/Books";
 import { Categories } from "@pages/books/Categories";
@@ -13,6 +12,10 @@ import { LoanPage } from "@pages/loan/LoanPage";
 import { MembersPage } from "@pages/clients/Cients";
 import { SettingsPage } from "@pages/settings/Settings";
 import { MemberDetailsPage } from "@pages/clients/ClientsDetail";
+import { ReportsPage } from "@pages/reports/ReportsPage";
+
+import { Dashboard } from "@pages/dashboard/dashboard";
+
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -59,6 +62,14 @@ export const App = () => {
             </ProtectedRoute>
            }
           />
+          
+          <Route path="/relatorios"
+           element={
+           <ProtectedRoute>
+            <ReportsPage userName={userName} isAdmin={isAdmin}/>
+            </ProtectedRoute>
+           }
+          />
 
         <Route
           path="/configuracoes"
@@ -100,7 +111,7 @@ export const App = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <AdminDashboard userName={userName} isAdmin={isAdmin} />
+              <Dashboard userName={userName} isAdmin={isAdmin} />
             </ProtectedRoute>
           }
         />

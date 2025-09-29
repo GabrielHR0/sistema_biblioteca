@@ -1,8 +1,0 @@
-:concurrency: 5
-:queues:
-  - default
-  - mailers
-  - critical
-:timeout: 30
-:redis:
-  url: redis://localhost:6379/0

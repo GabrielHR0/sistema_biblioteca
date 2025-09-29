@@ -1,353 +1,274 @@
-// components/LoanModal.tsx
-import React, { useState, useEffect } from "react";
-import { LoanService } from "@pages/loan/LoanService";
-import { checkClientPassword, createClient } from "@pages/clients/ClientService";
-import { CopySelectionStep } from "./LoanModalSteps/CopySelectionStep";
-import { ClientSelectionStep } from "./LoanModalSteps/ClientSelectionStep";
-import { ConfirmationStep } from "./LoanModalSteps/ConfirmationStep";
-import { ProgressIndicator } from "./LoanModalComponents/ProgressIndicator";
-import { ErrorAlert } from "./LoanModalComponents/ErrorAlert";
+// components/LoanModalSteps/ClientSelectionStep.tsx
+import React, { useState } from 'react';
 
-export interface BookCopy {
-  id?: number;
-  number?: number | any;
-  edition: string;
-  status: "available" | "borrowed" | "lost";
-  due_date?: string;
-  loans?: any[];
+interface ClientSelectionStepProps {
+  clientSearch: string;
+  setClientSearch: (search: string) => void;
+  clients: any[];
+  selectedClient: any;
+  loading: boolean;
+  onSearchClients: () => void;
+  onCreateClientWithDetails?: (clientData: any) => Promise<any>;
+  onClientSelect: (client: any) => void;
+  onResetClient: () => void;
+  onNext: () => void;
+  onBack: () => void;
 }
 
-export interface Book {
-  id?: number;
-  title: string;
-  author: string;
-  description?: string;
-  categories?: any[];
-  copies?: BookCopy[];
-}
-
-interface LoanModalProps {
-  book: Book;
-  token: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-export const LoanModal: React.FC<LoanModalProps> = ({
-  book,
-  token,
-  onClose,
-  onSuccess
+export const ClientSelectionStep: React.FC<ClientSelectionStepProps> = ({
+  clientSearch,
+  setClientSearch,
+  clients,
+  selectedClient,
+  loading,
+  onSearchClients,
+  onCreateClientWithDetails,
+  onClientSelect,
+  onResetClient,
+  onNext,
+  onBack
 }) => {
-  const [step, setStep] = useState(0);
-  const [selectedCopy, setSelectedCopy] = useState<BookCopy | null>(null);
-  const [clientSearch, setClientSearch] = useState("");
-  const [clients, setClients] = useState<any[]>([]);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [copies, setCopies] = useState<BookCopy[]>(book.copies || []);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
-  const [detailedLoanInfo, setDetailedLoanInfo] = useState<any>(null);
-  const [actionType, setActionType] = useState<"loan" | "return">("loan");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newClientDetails, setNewClientDetails] = useState({
+    fullName: clientSearch,
+    email: `${clientSearch.toLowerCase().replace(/\s+/g, '.')}@biblioteca.com`,
+    cpf: "",
+    phone: ""
+    // Campos de senha removidos pois o backend gera automaticamente
+  });
 
-  useEffect(() => {
-    const fetchCopies = async () => {
-      if (!book.id) return;
-      
-      try {
-        setLoading(true);
-        const copiesData = await LoanService.getBookCopies(token, book.id);
-        setCopies(copiesData);
-      } catch (err: any) {
-        console.error("Erro ao buscar cópias:", err);
-        setError(err.message || "Erro ao buscar cópias do livro");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCopies();
-  }, [book.id, token]);
-
-  const handleSearchClients = async () => {
-    if (!clientSearch.trim()) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
-      const clientsData = await LoanService.searchClients(token, clientSearch);
-      setClients(clientsData);
-    } catch (err: any) {
-      console.error("Erro ao buscar clientes:", err);
-      setError(err.message || "Erro ao buscar clientes");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateClientWithDetails = async (clientData: any) => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Adiciona uma senha padrão para novos clientes
-      const clientWithPassword = {
-        ...clientData,
-        password: "123456" // Senha padrão para novos clientes
-      };
-
-      const newClient = await createClient(clientWithPassword, token);
-      
-      setSelectedClient(newClient);
-      setClients([newClient]);
-      setError(null);
-      
-      return newClient;
-    } catch (err: any) {
-      console.error("Erro ao criar cliente:", err);
-      setError(err.message || "Erro ao criar cliente");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmLoan = async () => {
-    if (!selectedClient || !selectedCopy || !password) {
-      setError("Preencha todos os campos obrigatórios!");
+  const handleCreateWithDetails = async () => {
+    if (!newClientDetails.fullName.trim()) {
+      alert("O nome completo é obrigatório");
       return;
     }
 
-    setLoading(true);
-    setError(null);
-    try {
-      // Verifica a senha do cliente usando o ID do cliente salvo
-      const passwordCheck = await checkClientPassword(token, password, selectedClient.id);
-      
-      if (!passwordCheck.valid) {
-        throw new Error("Senha do cliente incorreta");
-      }
+    // Validações de senha removidas pois o backend gera automaticamente
 
-      await LoanService.createLoan(token, {
-        copy_id: selectedCopy.id!,
-        client_id: selectedClient.id,
-      });
-
-      alert("Empréstimo realizado com sucesso!");
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      console.error("Erro ao realizar empréstimo:", err);
-      setError(err.message || "Erro ao realizar empréstimo");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmReturn = async () => {
-    if (!selectedCopy) {
-      setError("Nenhuma cópia selecionada!");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const activeLoan = selectedCopy.loans?.find((loan: any) => 
-        loan.status === 'ongoing' || !loan.return_date
-      );
-
-      if (!activeLoan) {
-        throw new Error("Nenhum empréstimo ativo encontrado para esta cópia");
-      }
-
-      await LoanService.returnLoan(token, activeLoan.id);
-
-      alert("Devolução confirmada com sucesso!");
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      console.error("Erro ao confirmar devolução:", err);
-      setError(err.message || "Erro ao confirmar devolução");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadLoanDetails = async (copy: BookCopy) => {
-    if (copy.status !== 'borrowed' || !copy.loans || copy.loans.length === 0) {
-      return null;
-    }
-    
-    const activeLoan = copy.loans.find((loan: any) => 
-      loan.status === 'ongoing' || !loan.return_date
-    );
-
-    if (!activeLoan || !activeLoan.id) return null;
-
-    setLoadingLoanDetails(true);
-    try {
-      const loanDetails = await LoanService.getLoan(token, activeLoan.id);
-      setDetailedLoanInfo(loanDetails);
-      return loanDetails;
-    } catch (err: any) {
-      console.error("Erro ao carregar detalhes do empréstimo:", err);
-      setError("Erro ao carregar informações do empréstimo");
-      return null;
-    } finally {
-      setLoadingLoanDetails(false);
-    }
-  };
-
-  const handleCopySelection = async (copy: BookCopy) => {
-    setSelectedCopy(copy);
-    
-    if (copy.status === 'available') {
-      setActionType('loan');
-      setStep(1);
-    } else if (copy.status === 'borrowed') {
-      setActionType('return');
-      setLoadingLoanDetails(true);
+    if (onCreateClientWithDetails) {
       try {
-        await loadLoanDetails(copy);
-        setStep(2);
+        await onCreateClientWithDetails(newClientDetails);
+        setShowCreateForm(false);
       } catch (error) {
-        setError("Erro ao carregar detalhes do empréstimo");
+        // Erro já é tratado na função principal
       }
-    }
-  };
-
-  const nextStep = () => {
-    setError(null);
-    setStep(prev => prev + 1);
-  };
-  
-  const prevStep = () => {
-    setError(null);
-    setStep(prev => Math.max(prev - 1, 0));
-  };
-
-  const resetClientSelection = () => {
-    setSelectedClient(null);
-    setClients([]);
-    setClientSearch("");
-    setPassword(""); // Limpa a senha também
-  };
-
-  const availableCopies = copies.filter(copy => copy.status === "available");
-  const borrowedCopies = copies.filter(copy => copy.status === "borrowed");
-
-  const renderStep = () => {
-    switch (step) {
-      case 0:
-        return (
-          <CopySelectionStep
-            book={book}
-            availableCopies={availableCopies}
-            borrowedCopies={borrowedCopies}
-            selectedCopy={selectedCopy}
-            onCopySelect={handleCopySelection}
-            onNext={nextStep}
-            onClose={onClose}
-            loading={loading}
-            actionType={actionType}
-            detailedLoanInfo={detailedLoanInfo}
-          />
-        );
-      case 1:
-        return actionType === 'loan' ? (
-          <ClientSelectionStep
-            clientSearch={clientSearch}
-            setClientSearch={setClientSearch}
-            clients={clients}
-            selectedClient={selectedClient}
-            loading={loading}
-            onSearchClients={handleSearchClients}
-            onCreateClientWithDetails={handleCreateClientWithDetails}
-            onClientSelect={setSelectedClient}
-            onResetClient={resetClientSelection}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        ) : null;
-      case 2:
-        return (
-          <ConfirmationStep
-            book={book}
-            selectedCopy={selectedCopy}
-            selectedClient={selectedClient}
-            password={password}
-            setPassword={setPassword}
-            detailedLoanInfo={detailedLoanInfo}
-            loading={loading}
-            loadingLoanDetails={loadingLoanDetails}
-            actionType={actionType}
-            onConfirm={actionType === 'loan' ? handleConfirmLoan : handleConfirmReturn}
-            onBack={prevStep}
-          />
-        );
-      default:
-        return null;
     }
   };
 
   return (
-    <div
-      className="modal fade show d-block"
-      style={{
-        backgroundColor: "rgba(0,0,0,0.5)",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 1050,
-      }}
-    >
-      <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content">
-          <div className={`modal-header ${actionType === 'loan' ? 'bg-primary' : 'bg-success'} text-white`}>
-            <h5 className="modal-title">
-              <i className={`bi ${actionType === 'loan' ? 'bi-book' : 'bi-arrow-return-left'} me-2`}></i>
-              {actionType === 'loan' ? 'Empréstimo' : 'Devolução'} - {book.title}
-            </h5>
-            <button
-              type="button"
-              className="btn-close btn-close-white"
-              onClick={onClose}
+    <div>
+      <h6 className="fw-semibold mb-3">
+        <i className="bi bi-person me-1"></i>
+        Selecionar Leitor
+      </h6>
+      
+      {!selectedClient ? (
+        <>
+          <div className="input-group mb-3">
+            <span className="input-group-text">
+              <i className="bi bi-search"></i>
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Buscar leitor por nome, email ou CPF"
+              value={clientSearch}
+              onChange={(e) => {
+                setClientSearch(e.target.value);
+                setNewClientDetails(prev => ({
+                  ...prev,
+                  fullName: e.target.value,
+                  email: `${e.target.value.toLowerCase().replace(/\s+/g, '.')}@biblioteca.com`
+                }));
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && onSearchClients()}
               disabled={loading}
-            ></button>
+            />
+            <button
+              className="btn btn-outline-primary"
+              onClick={onSearchClients}
+              disabled={loading || !clientSearch.trim()}
+            >
+              {loading ? (
+                <span className="spinner-border spinner-border-sm me-1" />
+              ) : (
+                <i className="bi bi-search me-1"></i>
+              )}
+              Buscar
+            </button>
           </div>
           
-          <div className="modal-body">
-            <ErrorAlert error={error} />
-            
-            <ProgressIndicator 
-              step={step} 
-              actionType={actionType} 
-            />
-            
-            {renderStep()}
+          {clients.length > 0 && (
+            <div className="mb-3">
+              <h6 className="fw-semibold">Clientes encontrados:</h6>
+              <div className="list-group">
+                {clients.map((client) => (
+                  <button
+                    key={client.id}
+                    type="button"
+                    className="list-group-item list-group-item-action"
+                    onClick={() => onClientSelect(client)}
+                    disabled={loading}
+                  >
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <strong>{client.name || client.fullName}</strong>
+                        <br />
+                        <small className="text-muted">
+                          {client.email} {client.cpf && `• ${client.cpf}`}
+                        </small>
+                      </div>
+                      <i className="bi bi-chevron-right"></i>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <div className="d-grid gap-2">
+            {!showCreateForm ? (
+              <>
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => setShowCreateForm(true)}
+                  disabled={loading}
+                >
+                  <i className="bi bi-person-plus me-2"></i>
+                  Cadastrar Novo Leitor
+                </button>
+              </>
+            ) : (
+              <div className="card">
+                <div className="card-body">
+                  <h6 className="card-title">Cadastrar Novo Leitor</h6>
+                  <div className="mb-3">
+                    <label className="form-label">Nome Completo *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newClientDetails.fullName}
+                      onChange={(e) => setNewClientDetails(prev => ({
+                        ...prev,
+                        fullName: e.target.value
+                      }))}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      value={newClientDetails.email}
+                      onChange={(e) => setNewClientDetails(prev => ({
+                        ...prev,
+                        email: e.target.value
+                      }))}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">CPF</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newClientDetails.cpf}
+                      onChange={(e) => setNewClientDetails(prev => ({
+                        ...prev,
+                        cpf: e.target.value
+                      }))}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Telefone</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newClientDetails.phone}
+                      onChange={(e) => setNewClientDetails(prev => ({
+                        ...prev,
+                        phone: e.target.value
+                      }))}
+                    />
+                  </div>
+                  <div className="alert alert-info">
+                    <small>
+                      <i className="bi bi-info-circle me-1"></i>
+                      A senha será gerada automaticamente e enviada por email para o cliente.
+                    </small>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleCreateWithDetails}
+                      disabled={loading || !newClientDetails.fullName.trim()}
+                    >
+                      {loading ? (
+                        <span className="spinner-border spinner-border-sm me-2" />
+                      ) : (
+                        <i className="bi bi-check me-2"></i>
+                      )}
+                      Cadastrar
+                    </button>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setShowCreateForm(false)}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+        </>
+      ) : (
+        <div className="alert alert-success">
+          <h6 className="alert-heading">
+            <i className="bi bi-person-check me-1"></i>
+            Leitor Selecionado
+          </h6>
+          <strong>{selectedClient.name || selectedClient.fullName}</strong><br/>
+          <small className="text-muted">
+            <i className="bi bi-envelope me-1"></i>
+            {selectedClient.email}
+            {selectedClient.cpf && (
+              <>
+                <br />
+                <i className="bi bi-card-text me-1"></i>
+                {selectedClient.cpf}
+              </>
+            )}
+          </small>
+          <button
+            className="btn btn-sm btn-outline-secondary mt-2"
+            onClick={onResetClient}
+            disabled={loading}
+          >
+            <i className="bi bi-arrow-repeat me-1"></i>
+            Alterar
+          </button>
         </div>
+      )}
+      
+      <div className="d-flex justify-content-between mt-4">
+        <button 
+          className="btn btn-outline-secondary" 
+          onClick={onBack}
+          disabled={loading}
+        >
+          <i className="bi bi-arrow-left me-1"></i>
+          Voltar
+        </button>
+        {selectedClient && (
+          <button 
+            className="btn btn-primary" 
+            onClick={onNext}
+            disabled={loading}
+          >
+            Avançar <i className="bi bi-arrow-right ms-1"></i>
+          </button>
+        )}
       </div>
-
-      <style>{`
-        .cursor-pointer {
-          cursor: pointer;
-          transition: all 0.2s ease-in-out;
-        }
-        
-        .cursor-pointer:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .progress-bar {
-          transition: width 0.3s ease-in-out;
-        }
-      `}</style>
     </div>
   );
 };

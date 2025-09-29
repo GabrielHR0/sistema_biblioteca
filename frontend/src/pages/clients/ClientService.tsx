@@ -7,6 +7,7 @@ export interface Client {
   phone?: string;
   email?: string;
   created_at?: string | any;
+  generated_password?: string | any;
 }
 
 interface Loan {
@@ -42,7 +43,7 @@ export async function loginClient(login: string, password: string) {
   return response.json()
 }
 
-export async function createClient(client: Client): Promise<Client> {
+export async function createClient(client: Client): Promise<any> {
   const token = localStorage.getItem("token");
   const res = await fetch(`${API_URL}/clients`, {
     method: "POST",

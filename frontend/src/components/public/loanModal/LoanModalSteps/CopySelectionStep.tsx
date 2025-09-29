@@ -28,6 +28,18 @@ export const CopySelectionStep: React.FC<CopySelectionStepProps> = ({
   actionType,
   detailedLoanInfo
 }) => {
+  console.log('📋 CopySelectionStep renderizado:', {
+    actionType,
+    availableCopies: availableCopies.length,
+    borrowedCopies: borrowedCopies.length,
+    selectedCopy: selectedCopy?.id
+  });
+
+  const handleCopyClick = (copy: BookCopy) => {
+    console.log('🖱️ Cópia clicada - DADOS COMPLETOS:', JSON.stringify(copy, null, 2));
+    onCopySelect(copy);
+  };
+
   return (
     <div>
       <h6 className="fw-semibold mb-3">
@@ -62,12 +74,14 @@ export const CopySelectionStep: React.FC<CopySelectionStepProps> = ({
           <div className="row g-3 mb-4">
             {availableCopies.map((copy) => (
               <div key={copy.id} className="col-md-6">
-                <CopyCard
-                  copy={copy}
-                  isSelected={selectedCopy?.id === copy.id}
-                  onSelect={onCopySelect}
-                  actionType="loan"
-                />
+                <div onClick={() => handleCopyClick(copy)} style={{ cursor: 'pointer' }}>
+                  <CopyCard
+                    copy={copy}
+                    isSelected={selectedCopy?.id === copy.id}
+                    onSelect={onCopySelect}
+                    actionType="loan"
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -83,13 +97,15 @@ export const CopySelectionStep: React.FC<CopySelectionStepProps> = ({
           <div className="row g-3">
             {borrowedCopies.map((copy) => (
               <div key={copy.id} className="col-md-6">
-                <CopyCard
-                  copy={copy}
-                  isSelected={selectedCopy?.id === copy.id}
-                  onSelect={onCopySelect}
-                  actionType="return"
-                  loanInfo={detailedLoanInfo}
-                />
+                <div onClick={() => handleCopyClick(copy)} style={{ cursor: 'pointer' }}>
+                  <CopyCard
+                    copy={copy}
+                    isSelected={selectedCopy?.id === copy.id}
+                    onSelect={onCopySelect}
+                    actionType="return"
+                    loanInfo={detailedLoanInfo}
+                  />
+                </div>
               </div>
             ))}
           </div>

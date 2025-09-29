@@ -1,7 +1,9 @@
-// LoanService.ts
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+import {CopyWithLoanHistory} from '@components/public/loanModal/ReturnModal'
+
 export const LoanService = {
+
   async getCategories(token: string): Promise<any[]> {
     const response = await fetch(`${API_URL}/categories`, {
       method: "GET",
@@ -19,13 +21,31 @@ export const LoanService = {
     return response.json();
   },
 
+  async renewLoan(token: string, loan: any): Promise<any>{
+    const response = await fetch(`${API_URL}/loans/${loan.id}/renew`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.errors || errorData.error || "Erro ao registrar devolução");
+    }
+
+    return response.json();
+  },
+
   async searchBooks(token: string, params: {
     title?: string;
     author?: string;
     category_id?: number;
   }): Promise<any[]> {
     const queryParams = new URLSearchParams();
-    
+
     if (params.title) queryParams.append('title', params.title);
     if (params.author) queryParams.append('author', params.author);
     if (params.category_id) queryParams.append('category_id', params.category_id.toString());
@@ -83,6 +103,24 @@ export const LoanService = {
     return response.json();
   },
 
+  // NOVO MÉTODO: Buscar empréstimos ativos por cópia
+  async getActiveLoansByCopy(token: string, copyId: number): Promise<any[]> {
+    const response = await fetch(`${API_URL}/loans/active_by_copy?copy_id=${copyId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Erro ao buscar empréstimos ativos da cópia");
+    }
+
+    return response.json();
+  },
+
   async createLoan(token: string, loanData: {
     copy_id: number;
     client_id: number;
@@ -116,6 +154,24 @@ export const LoanService = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.errors || errorData.error || "Erro ao registrar devolução");
+    }
+
+    return response.json();
+  },
+
+  async returnLoanPost(token: string, loanId: number): Promise<any> {
+    const response = await fetch(`${API_URL}/loans/${loanId}/return`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.errors || errorData.error || "Erro ao registrar devolução (POST)");
     }
 
     return response.json();
@@ -171,7 +227,7 @@ export const LoanService = {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         loan: {
           return_date: returnData?.return_date || new Date().toISOString(),
           status: "returned",
@@ -189,7 +245,7 @@ export const LoanService = {
   },
 
   async getActiveLoans(token: string, clientId?: number): Promise<any[]> {
-    const url = clientId 
+    const url = clientId
       ? `${API_URL}/loans?status=active&client_id=${clientId}`
       : `${API_URL}/loans?status=active`;
 
@@ -209,8 +265,8 @@ export const LoanService = {
     return response.json();
   },
 
-  async getCopyLoanHistory(token: string, copyId: number): Promise<any[]> {
-    const response = await fetch(`${API_URL}/copies/${copyId}/loans`, {
+  async getCopyLoanHistory(token: string, copyId: number): Promise<CopyWithLoanHistory> {
+    const response = await fetch(`${API_URL}/copies/${copyId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -224,5 +280,5 @@ export const LoanService = {
     }
 
     return response.json();
-  }
+  },
 };

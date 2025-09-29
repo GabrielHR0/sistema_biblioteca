@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { BaseLayout } from "@layouts/BaseLayout";
 import { useAuth } from "../auth/authContext";
 import { apiGetClients, createClient, Client } from "./ClientService";
@@ -11,6 +11,8 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
 }) => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,6 +24,15 @@ export const MembersPage: React.FC<{ userName: string; isAdmin: boolean }> = ({
     cpf: "",
     phone: ""
   });
+
+  // -------------------- VERIFICAR MODAL VIA QUERY PARAMS --------------------
+  useEffect(() => {
+    const modalType = searchParams.get('modal');
+    if (modalType === 'cliente') {
+      setShowCreateModal(true);
+      navigate('/membros', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   // -------------------- FETCH CLIENTS --------------------
   const fetchClients = async () => {
